@@ -5,7 +5,8 @@ description: Learn how to use the HTTP REPL .NET Core Global Tool to browse and 
 monikerRange: '>= aspnetcore-2.1'
 ms.author: scaddie
 ms.custom: mvc
-ms.date: 08/29/2019
+ms.date: 05/20/2020
+no-loc: ["ASP.NET Core Identity", cookie, Cookie, Blazor, "Blazor Server", "Blazor WebAssembly", "Identity", "Let's Encrypt", Razor, SignalR]
 uid: web-api/http-repl
 ---
 # Test web APIs with the HTTP REPL
@@ -28,7 +29,7 @@ The following [HTTP verbs](https://github.com/microsoft/api-guidelines/blob/vNex
 * [POST](#test-http-post-requests)
 * [PUT](#test-http-put-requests)
 
-To follow along, [view or download the sample ASP.NET Core web API](https://github.com/aspnet/AspNetCore.Docs/tree/master/aspnetcore/web-api/http-repl/samples) ([how to download](xref:index#how-to-download-a-sample)).
+To follow along, [view or download the sample ASP.NET Core web API](https://github.com/dotnet/AspNetCore.Docs/tree/master/aspnetcore/web-api/http-repl/samples) ([how to download](xref:index#how-to-download-a-sample)).
 
 ## Prerequisites
 
@@ -264,7 +265,7 @@ Response colorization is currently supported for JSON only. To customize the def
 https://localhost:5001/people~ pref set colors.json White
 ```
 
-Only the [allowed colors](https://github.com/aspnet/HttpRepl/blob/01d5c3c3373e98fe566ff5ef8a17c571de880293/src/Microsoft.Repl/ConsoleHandling/AllowedColors.cs) may be used. Subsequent HTTP requests display output with the new coloring.
+Only the [allowed colors](https://github.com/dotnet/HttpRepl/blob/01d5c3c3373e98fe566ff5ef8a17c571de880293/src/Microsoft.Repl/ConsoleHandling/AllowedColors.cs) may be used. Subsequent HTTP requests display output with the new coloring.
 
 When specific color keys aren't set, more generic keys are considered. To demonstrate this fallback behavior, consider the following example:
 
@@ -572,6 +573,7 @@ To issue an HTTP PUT request:
         "data": "Strawberry"
       }
     ]
+    ```
 
 1. Run the `put` command on an endpoint that supports it:
 
@@ -684,6 +686,7 @@ To issue an HTTP DELETE request:
         "data": "Strawberry"
       }
     ]
+    ```
 
 1. Run the `delete` command on an endpoint that supports it:
 
@@ -784,25 +787,123 @@ The route parameter, if any, expected by the associated controller action method
 
 To set an HTTP request header, use one of the following approaches:
 
-1. Set inline with the HTTP request. For example:
+* Set inline with the HTTP request. For example:
 
-  ```console
-  https://localhost:5001/people~ post -h Content-Type=application/json
-  ```
+    ```console
+    https://localhost:5001/people~ post -h Content-Type=application/json
+    ```
+    
+    With the preceding approach, each distinct HTTP request header requires its own `-h` option.
 
-  With the preceding approach, each distinct HTTP request header requires its own `-h` option.
+* Set before sending the HTTP request. For example:
 
-1. Set before sending the HTTP request. For example:
+    ```console
+    https://localhost:5001/people~ set header Content-Type application/json
+    ```
+    
+    When setting the header before sending a request, the header remains set for the duration of the command shell session. To clear the header, provide an empty value. For example:
+    
+    ```console
+    https://localhost:5001/people~ set header Content-Type
+    ```
 
-  ```console
-  https://localhost:5001/people~ set header Content-Type application/json
-  ```
+## Test secured endpoints
 
-  When setting the header before sending a request, the header remains set for the duration of the command shell session. To clear the header, provide an empty value. For example:
+The HTTP REPL supports the testing of secured endpoints in two ways: via the default credentials of the logged in user or through the use of HTTP request headers. 
 
-  ```console
-  https://localhost:5001/people~ set header Content-Type
-  ```
+### Default credentials
+
+Consider a scenario in which the web API you're testing is hosted in IIS and is secured with Windows authentication. You want the credentials of the user running the tool to flow across to the HTTP endpoints being tested. To pass the default credentials of the logged in user:
+
+1. Set the `httpClient.useDefaultCredentials` preference to `true`:
+
+    ```console
+    pref set httpClient.useDefaultCredentials true
+    ```
+
+1. Exit and restart the tool before sending another request to the web API.
+
+### HTTP request headers
+
+Examples of supported authentication and authorization schemes include basic authentication, JWT bearer tokens, and digest authentication. For example, you can send a bearer token to an endpoint with the following command:
+
+```console
+set header Authorization "bearer <TOKEN VALUE>"
+```
+
+To access an Azure-hosted endpoint or to use the [Azure REST API](/rest/api/azure/), you need a bearer token. Use the following steps to obtain a bearer token for your Azure subscription via the [Azure CLI](/cli/azure/). The HTTP REPL sets the bearer token in an HTTP request header and retrieves a list of Azure App Service Web Apps.
+
+1. Log in to Azure:
+
+    ```azurecli
+    az login
+    ```
+
+1. Get your subscription ID with the following command:
+
+    ```azurecli
+    az account show --query id
+    ```
+
+1. Copy your subscription ID and run the following command:
+
+    ```azurecli
+    az account set --subscription "<SUBSCRIPTION ID>"
+    ```
+
+1. Get your bearer token with the following command:
+
+    ```azurecli
+    az account get-access-token --query accessToken
+    ```
+
+1. Connect to the Azure REST API via the HTTP REPL:
+
+    ```console
+    httprepl https://management.azure.com
+    ```
+
+1. Set the `Authorization` HTTP request header:
+
+    ```console
+    https://management.azure.com/> set header Authorization "bearer <ACCESS TOKEN>"
+    ```
+
+1. Navigate to the subscription:
+
+    ```console
+    https://management.azure.com/> cd subscriptions/<SUBSCRIPTION ID>
+    ```
+
+1. Get a list of your subscription's Azure App Service Web Apps:
+
+    ```console
+    https://management.azure.com/subscriptions/{SUBSCRIPTION ID}> get providers/Microsoft.Web/sites?api-version=2016-08-01
+    ```
+
+    The following response is displayed:
+
+    ```console
+    HTTP/1.1 200 OK
+    Cache-Control: no-cache
+    Content-Length: 35948
+    Content-Type: application/json; charset=utf-8
+    Date: Thu, 19 Sep 2019 23:04:03 GMT
+    Expires: -1
+    Pragma: no-cache
+    Strict-Transport-Security: max-age=31536000; includeSubDomains
+    X-Content-Type-Options: nosniff
+    x-ms-correlation-request-id: <em>xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx</em>
+    x-ms-original-request-ids: <em>xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx;xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx</em>
+    x-ms-ratelimit-remaining-subscription-reads: 11999
+    x-ms-request-id: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+    x-ms-routing-request-id: WESTUS:xxxxxxxxxxxxxxxx:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxx
+    {
+      "value": [
+        <AZURE RESOURCES LIST>
+      ]
+    }
+    ```
 
 ## Toggle HTTP request display
 
@@ -949,4 +1050,4 @@ https://localhost:5001/~
 ## Additional resources
 
 * [REST API requests](https://github.com/microsoft/api-guidelines/blob/vNext/Guidelines.md#74-supported-methods)
-* [HTTP REPL GitHub repository](https://github.com/aspnet/HttpRepl)
+* [HTTP REPL GitHub repository](https://github.com/dotnet/HttpRepl)

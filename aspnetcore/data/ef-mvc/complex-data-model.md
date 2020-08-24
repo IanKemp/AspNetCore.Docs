@@ -1,11 +1,12 @@
 ---
 title: "Tutorial: Create a complex data model - ASP.NET MVC with EF Core"
 description: "In this tutorial, add more entities and relationships and customize the data model by specifying formatting, validation, and mapping rules."
-author: tdykstra
+author: rick-anderson
 ms.author: riande
 ms.custom: mvc
 ms.date: 03/27/2019
 ms.topic: tutorial
+no-loc: ["ASP.NET Core Identity", cookie, Cookie, Blazor, "Blazor Server", "Blazor WebAssembly", "Identity", "Let's Encrypt", Razor, SignalR]
 uid: data/ef-mvc/complex-data-model
 ---
 
@@ -84,7 +85,7 @@ Suppose you want to ensure that users don't enter more than 50 characters for a 
 The `StringLength` attribute won't prevent a user from entering white space for a name. You can use the `RegularExpression` attribute to apply restrictions to the input. For example, the following code requires the first character to be upper case and the remaining characters to be alphabetical:
 
 ```csharp
-[RegularExpression(@"^[A-Z]+[a-zA-Z""'\s-]*$")]
+[RegularExpression(@"^[A-Z]+[a-zA-Z]*$")]
 ```
 
 The `MaxLength` attribute provides functionality similar to the `StringLength` attribute but doesn't provide client side validation.
@@ -150,11 +151,12 @@ In *Models/Student.cs*, replace the code you added earlier with the following co
 
 The `Required` attribute makes the name properties required fields. The `Required` attribute isn't needed for non-nullable types such as value types (DateTime, int, double, float, etc.). Types that can't be null are automatically treated as required fields.
 
-You could remove the `Required` attribute and replace it with a minimum length parameter for the `StringLength` attribute:
+The `Required` attribute must be used with `MinimumLength` for the `MinimumLength` to be enforced.
 
 ```csharp
 [Display(Name = "Last Name")]
-[StringLength(50, MinimumLength=1)]
+[Required]
+[StringLength(50, MinimumLength=2)]
 public string LastName { get; set; }
 ```
 
@@ -504,7 +506,7 @@ Right-click the **CourseAssignment** table and select **View Data** to verify th
 
 ## Get the code
 
-[Download or view the completed application.](https://github.com/aspnet/AspNetCore.Docs/tree/master/aspnetcore/data/ef-mvc/intro/samples/cu-final)
+[Download or view the completed application.](https://github.com/dotnet/AspNetCore.Docs/tree/master/aspnetcore/data/ef-mvc/intro/samples/cu-final)
 
 ## Next steps
 

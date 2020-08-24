@@ -1,16 +1,17 @@
 ---
 title: ASP.NET Core Module
-author: guardrex
+author: rick-anderson
 description: Learn how to configure the ASP.NET Core Module for hosting ASP.NET Core apps.
 monikerRange: '>= aspnetcore-2.1'
 ms.author: riande
 ms.custom: mvc
-ms.date: 09/24/2019
+ms.date: 01/13/2020
+no-loc: ["ASP.NET Core Identity", cookie, Cookie, Blazor, "Blazor Server", "Blazor WebAssembly", "Identity", "Let's Encrypt", Razor, SignalR]
 uid: host-and-deploy/aspnet-core-module
 ---
 # ASP.NET Core Module
 
-By [Tom Dykstra](https://github.com/tdykstra), [Rick Strahl](https://github.com/RickStrahl), [Chris Ross](https://github.com/Tratcher), [Rick Anderson](https://twitter.com/RickAndMSFT), [Sourabh Shirhatti](https://twitter.com/sshirhatti), [Justin Kotalik](https://github.com/jkotalik), and [Luke Latham](https://github.com/guardrex)
+By [Tom Dykstra](https://github.com/tdykstra), [Rick Strahl](https://github.com/RickStrahl), [Chris Ross](https://github.com/Tratcher), [Rick Anderson](https://twitter.com/RickAndMSFT), [Sourabh Shirhatti](https://twitter.com/sshirhatti), and [Justin Kotalik](https://github.com/jkotalik)
 
 ::: moniker range=">= aspnetcore-3.0"
 
@@ -22,7 +23,7 @@ The ASP.NET Core Module is a native IIS module that plugs into the IIS pipeline 
 Supported Windows versions:
 
 * Windows 7 or later
-* Windows Server 2008 R2 or later
+* Windows Server 2012 R2 or later
 
 When hosting in-process, the module uses an in-process server implementation for IIS, called IIS HTTP Server (`IISHttpServer`).
 
@@ -54,7 +55,7 @@ The following characteristics apply when hosting in-process:
 
 * In ASP.NET Core 2.2.1 or earlier, <xref:System.IO.Directory.GetCurrentDirectory*> returns the worker directory of the process started by IIS rather than the app's directory (for example, *C:\Windows\System32\inetsrv* for *w3wp.exe*).
 
-  For sample code that sets the app's current directory, see the [CurrentDirectoryHelpers class](https://github.com/aspnet/AspNetCore.Docs/tree/master/aspnetcore/host-and-deploy/aspnet-core-module/samples_snapshot/3.x/CurrentDirectoryHelpers.cs). Call the `SetCurrentDirectory` method. Subsequent calls to <xref:System.IO.Directory.GetCurrentDirectory*> provide the app's directory.
+  For sample code that sets the app's current directory, see the [CurrentDirectoryHelpers class](https://github.com/dotnet/AspNetCore.Docs/tree/master/aspnetcore/host-and-deploy/aspnet-core-module/samples_snapshot/3.x/CurrentDirectoryHelpers.cs). Call the `SetCurrentDirectory` method. Subsequent calls to <xref:System.IO.Directory.GetCurrentDirectory*> provide the app's directory.
 
 * When hosting in-process, <xref:Microsoft.AspNetCore.Authentication.AuthenticationService.AuthenticateAsync*> isn't called internally to initialize a user. Therefore, an <xref:Microsoft.AspNetCore.Authentication.IClaimsTransformation> implementation used to transform claims after every authentication isn't activated by default. When transforming claims with an <xref:Microsoft.AspNetCore.Authentication.IClaimsTransformation> implementation, call <xref:Microsoft.Extensions.DependencyInjection.AuthenticationServiceCollectionExtensions.AddAuthentication*> to add authentication services:
 
@@ -70,16 +71,22 @@ The following characteristics apply when hosting in-process:
       app.UseAuthentication();
   }
   ```
+  
+  * [Web Package (single-file) deployments](/aspnet/web-forms/overview/deployment/web-deployment-in-the-enterprise/deploying-web-packages) aren't supported.
 
 ### Out-of-process hosting model
 
-To configure an app for out-of-process hosting, set the value of the `<AspNetCoreHostingModel>` property to `OutOfProcess` (in-process hosting is set with `InProcess`, which is the default value):
+To configure an app for out-of-process hosting, set the value of the `<AspNetCoreHostingModel>` property to `OutOfProcess` in the project file (*.csproj*):
 
 ```xml
 <PropertyGroup>
   <AspNetCoreHostingModel>OutOfProcess</AspNetCoreHostingModel>
 </PropertyGroup>
 ```
+
+In-process hosting is set with `InProcess`, which is the default value.
+
+The value of `<AspNetCoreHostingModel>` is case insensitive, so `inprocess` and `outofprocess` are valid values.
 
 [Kestrel](xref:fundamentals/servers/kestrel) server is used instead of IIS HTTP Server (`IISHttpServer`).
 
@@ -128,7 +135,7 @@ The following *web.config* file is published for a [framework-dependent deployme
                   arguments=".\MyApp.dll"
                   stdoutLogEnabled="false"
                   stdoutLogFile=".\logs\stdout"
-                  hostingModel="InProcess" />
+                  hostingModel="inprocess" />
     </system.webServer>
   </location>
 </configuration>
@@ -147,7 +154,7 @@ The following *web.config* is published for a [self-contained deployment](/dotne
       <aspNetCore processPath=".\MyApp.exe"
                   stdoutLogEnabled="false"
                   stdoutLogFile=".\logs\stdout"
-                  hostingModel="InProcess" />
+                  hostingModel="inprocess" />
     </system.webServer>
   </location>
 </configuration>
@@ -166,28 +173,28 @@ For information on IIS sub-application configuration, see <xref:host-and-deploy/
 | `arguments` | <p>Optional string attribute.</p><p>Arguments to the executable specified in **processPath**.</p> | |
 | `disableStartUpErrorPage` | <p>Optional Boolean attribute.</p><p>If true, the **502.5 - Process Failure** page is suppressed, and the 502 status code page configured in the *web.config* takes precedence.</p> | `false` |
 | `forwardWindowsAuthToken` | <p>Optional Boolean attribute.</p><p>If true, the token is forwarded to the child process listening on %ASPNETCORE_PORT% as a header 'MS-ASPNETCORE-WINAUTHTOKEN' per request. It's the responsibility of that process to call CloseHandle on this token per request.</p> | `true` |
-| `hostingModel` | <p>Optional string attribute.</p><p>Specifies the hosting model as in-process (`InProcess`) or out-of-process (`OutOfProcess`).</p> | `InProcess` |
+| `hostingModel` | <p>Optional string attribute.</p><p>Specifies the hosting model as in-process (`InProcess`/`inprocess`) or out-of-process (`OutOfProcess`/`outofprocess`).</p> | `InProcess`<br>`inprocess` |
 | `processesPerApplication` | <p>Optional integer attribute.</p><p>Specifies the number of instances of the process specified in the **processPath** setting that can be spun up per app.</p><p>&dagger;For in-process hosting, the value is limited to `1`.</p><p>Setting `processesPerApplication` is discouraged. This attribute will be removed in a future release.</p> | Default: `1`<br>Min: `1`<br>Max: `100`&dagger; |
 | `processPath` | <p>Required string attribute.</p><p>Path to the executable that launches a process listening for HTTP requests. Relative paths are supported. If the path begins with `.`, the path is considered to be relative to the site root.</p> | |
 | `rapidFailsPerMinute` | <p>Optional integer attribute.</p><p>Specifies the number of times the process specified in **processPath** is allowed to crash per minute. If this limit is exceeded, the module stops launching the process for the remainder of the minute.</p><p>Not supported with in-process hosting.</p> | Default: `10`<br>Min: `0`<br>Max: `100` |
 | `requestTimeout` | <p>Optional timespan attribute.</p><p>Specifies the duration for which the ASP.NET Core Module waits for a response from the process listening on %ASPNETCORE_PORT%.</p><p>In versions of the ASP.NET Core Module that shipped with the release of ASP.NET Core 2.1 or later, the `requestTimeout` is specified in hours, minutes, and seconds.</p><p>Doesn't apply to in-process hosting. For in-process hosting, the module waits for the app to process the request.</p><p>Valid values for minutes and seconds segments of the string are in the range 0-59. Use of **60** in the value for minutes or seconds results in a *500 - Internal Server Error*.</p> | Default: `00:02:00`<br>Min: `00:00:00`<br>Max: `360:00:00` |
 | `shutdownTimeLimit` | <p>Optional integer attribute.</p><p>Duration in seconds that the module waits for the executable to gracefully shutdown when the *app_offline.htm* file is detected.</p> | Default: `10`<br>Min: `0`<br>Max: `600` |
-| `startupTimeLimit` | <p>Optional integer attribute.</p><p>Duration in seconds that the module waits for the executable to start a process listening on the port. If this time limit is exceeded, the module kills the process. The module attempts to relaunch the process when it receives a new request and continues to attempt to restart the process on subsequent incoming requests unless the app fails to start **rapidFailsPerMinute** number of times in the last rolling minute.</p><p>A value of 0 (zero) is **not** considered an infinite timeout.</p> | Default: `120`<br>Min: `0`<br>Max: `3600` |
+| `startupTimeLimit` | <p>Optional integer attribute.</p><p>Duration in seconds that the module waits for the executable to start a process listening on the port. If this time limit is exceeded, the module kills the process.</p><p>When hosting *in-process*: The process is **not** restarted and does **not** use the **rapidFailsPerMinute** setting.</p><p>When hosting *out-of-process*: The module attempts to relaunch the process when it receives a new request and continues to attempt to restart the process on subsequent incoming requests unless the app fails to start **rapidFailsPerMinute** number of times in the last rolling minute.</p><p>A value of 0 (zero) is **not** considered an infinite timeout.</p> | Default: `120`<br>Min: `0`<br>Max: `3600` |
 | `stdoutLogEnabled` | <p>Optional Boolean attribute.</p><p>If true, **stdout** and **stderr** for the process specified in **processPath** are redirected to the file specified in **stdoutLogFile**.</p> | `false` |
 | `stdoutLogFile` | <p>Optional string attribute.</p><p>Specifies the relative or absolute file path for which **stdout** and **stderr** from the process specified in **processPath** are logged. Relative paths are relative to the root of the site. Any path starting with `.` are relative to the site root and all other paths are treated as absolute paths. Any folders provided in the path are created by the module when the log file is created. Using underscore delimiters, a timestamp, process ID, and file extension (*.log*) are added to the last segment of the **stdoutLogFile** path. If `.\logs\stdout` is supplied as a value, an example stdout log is saved as *stdout_20180205194132_1934.log* in the *logs* folder when saved on 2/5/2018 at 19:41:32 with a process ID of 1934.</p> | `aspnetcore-stdout` |
 
-### Setting environment variables
+### Set environment variables
 
 Environment variables can be specified for the process in the `processPath` attribute. Specify an environment variable with the `<environmentVariable>` child element of an `<environmentVariables>` collection element. Environment variables set in this section take precedence over system environment variables.
 
-The following example sets two environment variables. `ASPNETCORE_ENVIRONMENT` configures the app's environment to `Development`. A developer may temporarily set this value in the *web.config* file in order to force the [Developer Exception Page](xref:fundamentals/error-handling) to load when debugging an app exception. `CONFIG_DIR` is an example of a user-defined environment variable, where the developer has written code that reads the value on startup to form a path for loading the app's configuration file.
+The following example sets two environment variables in *web.config*. `ASPNETCORE_ENVIRONMENT` configures the app's environment to `Development`. A developer may temporarily set this value in the *web.config* file in order to force the [Developer Exception Page](xref:fundamentals/error-handling) to load when debugging an app exception. `CONFIG_DIR` is an example of a user-defined environment variable, where the developer has written code that reads the value on startup to form a path for loading the app's configuration file.
 
 ```xml
 <aspNetCore processPath="dotnet"
       arguments=".\MyApp.dll"
       stdoutLogEnabled="false"
-      stdoutLogFile="\\?\%home%\LogFiles\stdout"
-      hostingModel="InProcess">
+      stdoutLogFile=".\logs\stdout"
+      hostingModel="inprocess">
   <environmentVariables>
     <environmentVariable name="ASPNETCORE_ENVIRONMENT" value="Development" />
     <environmentVariable name="CONFIG_DIR" value="f:\application_config" />
@@ -196,7 +203,7 @@ The following example sets two environment variables. `ASPNETCORE_ENVIRONMENT` c
 ```
 
 > [!NOTE]
-> An alternative to setting the environment directly in *web.config* is to include the `<EnvironmentName>` property in the publish profile (*.pubxml*) or project file. This approach sets the environment in *web.config* when the project is published:
+> An alternative to setting the environment directly in *web.config* is to include the `<EnvironmentName>` property in the [publish profile (.pubxml)](xref:host-and-deploy/visual-studio-publish-profiles) or project file. This approach sets the environment in *web.config* when the project is published:
 >
 > ```xml
 > <PropertyGroup>
@@ -233,22 +240,30 @@ The ASP.NET Core Module redirects stdout and stderr console output to disk if th
 
 Logs aren't rotated, unless process recycling/restart occurs. It's the responsibility of the hoster to limit the disk space the logs consume.
 
-Using the stdout log is only recommended for troubleshooting app startup issues. Don't use the stdout log for general app logging purposes. For routine logging in an ASP.NET Core app, use a logging library that limits log file size and rotates logs. For more information, see [third-party logging providers](xref:fundamentals/logging/index#third-party-logging-providers).
+Using the stdout log is only recommended for troubleshooting app startup issues when hosting on IIS or when using [development-time support for IIS with Visual Studio](xref:host-and-deploy/iis/development-time-iis-support), not while debugging locally and running the app with IIS Express.
+
+Don't use the stdout log for general app logging purposes. For routine logging in an ASP.NET Core app, use a logging library that limits log file size and rotates logs. For more information, see [third-party logging providers](xref:fundamentals/logging/index#third-party-logging-providers).
 
 A timestamp and file extension are added automatically when the log file is created. The log file name is composed by appending the timestamp, process ID, and file extension (*.log*) to the last segment of the `stdoutLogFile` path (typically *stdout*) delimited by underscores. If the `stdoutLogFile` path ends with *stdout*, a log for an app with a PID of 1934 created on 2/5/2018 at 19:42:32 has the file name *stdout_20180205194132_1934.log*.
 
 If `stdoutLogEnabled` is false, errors that occur on app startup are captured and emitted to the event log up to 30 KB. After startup, all additional logs are discarded.
 
-The following sample `aspNetCore` element configures stdout logging for an app hosted in Azure App Service. A local path or network share path is acceptable for local logging. Confirm that the AppPool user identity has permission to write to the path provided.
+The following sample `aspNetCore` element configures stdout logging at the relative path `.\log\`. Confirm that the AppPool user identity has permission to write to the path provided.
 
 ```xml
 <aspNetCore processPath="dotnet"
     arguments=".\MyApp.dll"
     stdoutLogEnabled="true"
-    stdoutLogFile="\\?\%home%\LogFiles\stdout"
-    hostingModel="InProcess">
+    stdoutLogFile=".\logs\stdout"
+    hostingModel="inprocess">
 </aspNetCore>
 ```
+
+When publishing an app for Azure App Service deployment, the Web SDK sets the `stdoutLogFile` value to `\\?\%home%\LogFiles\stdout`. The `%home` environment variable is predefined for apps hosted by Azure App Service.
+
+To create logging filter rules, see the [Configuration](xref:fundamentals/logging/index#log-filtering) and [Log filtering](xref:fundamentals/logging/index#log-filtering) sections of the ASP.NET Core logging documentation.
+
+For more information on path formats, see [File path formats on Windows systems](/dotnet/standard/io/file-path-formats).
 
 ## Enhanced diagnostic logs
 
@@ -259,7 +274,7 @@ The ASP.NET Core Module is configurable to provide enhanced diagnostics logs. Ad
     arguments=".\MyApp.dll"
     stdoutLogEnabled="false"
     stdoutLogFile="\\?\%home%\LogFiles\stdout"
-    hostingModel="InProcess">
+    hostingModel="inprocess">
   <handlerSettings>
     <handlerSetting name="debugFile" value=".\logs\aspnetcore-debug.log" />
     <handlerSetting name="debugLevel" value="FILE,TRACE" />
@@ -286,8 +301,8 @@ Locations (multiple locations are permitted):
 
 The handler settings can also be provided via environment variables:
 
-* `ASPNETCORE_MODULE_DEBUG_FILE` &ndash; Path to the debug log file. (Default: *aspnetcore-debug.log*)
-* `ASPNETCORE_MODULE_DEBUG` &ndash; Debug level setting.
+* `ASPNETCORE_MODULE_DEBUG_FILE`: Path to the debug log file. (Default: *aspnetcore-debug.log*)
+* `ASPNETCORE_MODULE_DEBUG`: Debug level setting.
 
 > [!WARNING]
 > Do **not** leave debug logging enabled in the deployment for longer than required to troubleshoot an issue. The size of the log isn't limited. Leaving the debug log enabled can exhaust the available disk space and crash the server or app service.
@@ -298,14 +313,14 @@ See [Configuration with web.config](#configuration-with-webconfig) for an exampl
 
 *Only applies when using the in-process hosting model.*
 
-Configure the managed stack size using the `stackSize` setting in bytes. The default size is `1048576` bytes (1 MB).
+Configure the managed stack size using the `stackSize` setting in bytes in *web.config*. The default size is `1048576` bytes (1 MB).
 
 ```xml
 <aspNetCore processPath="dotnet"
     arguments=".\MyApp.dll"
     stdoutLogEnabled="false"
     stdoutLogFile="\\?\%home%\LogFiles\stdout"
-    hostingModel="InProcess">
+    hostingModel="inprocess">
   <handlerSettings>
     <handlerSetting name="stackSize" value="2097152" />
   </handlerSettings>
@@ -432,6 +447,8 @@ To configure an app for in-process hosting, add the `<AspNetCoreHostingModel>` p
 
 The in-process hosting model isn't supported for ASP.NET Core apps that target the .NET Framework.
 
+The value of `<AspNetCoreHostingModel>` is case insensitive, so `inprocess` and `outofprocess` are valid values.
+
 If the `<AspNetCoreHostingModel>` property isn't present in the file, the default value is `OutOfProcess`.
 
 The following characteristics apply when hosting in-process:
@@ -454,7 +471,7 @@ The following characteristics apply when hosting in-process:
 
 * In ASP.NET Core 2.2.1 or earlier, <xref:System.IO.Directory.GetCurrentDirectory*> returns the worker directory of the process started by IIS rather than the app's directory (for example, *C:\Windows\System32\inetsrv* for *w3wp.exe*).
 
-  For sample code that sets the app's current directory, see the [CurrentDirectoryHelpers class](https://github.com/aspnet/AspNetCore.Docs/tree/master/aspnetcore/host-and-deploy/aspnet-core-module/samples_snapshot/2.x/CurrentDirectoryHelpers.cs). Call the `SetCurrentDirectory` method. Subsequent calls to <xref:System.IO.Directory.GetCurrentDirectory*> provide the app's directory.
+  For sample code that sets the app's current directory, see the [CurrentDirectoryHelpers class](https://github.com/dotnet/AspNetCore.Docs/tree/master/aspnetcore/host-and-deploy/aspnet-core-module/samples_snapshot/2.x/CurrentDirectoryHelpers.cs). Call the `SetCurrentDirectory` method. Subsequent calls to <xref:System.IO.Directory.GetCurrentDirectory*> provide the app's directory.
 
 * When hosting in-process, <xref:Microsoft.AspNetCore.Authentication.AuthenticationService.AuthenticateAsync*> isn't called internally to initialize a user. Therefore, an <xref:Microsoft.AspNetCore.Authentication.IClaimsTransformation> implementation used to transform claims after every authentication isn't activated by default. When transforming claims with an <xref:Microsoft.AspNetCore.Authentication.IClaimsTransformation> implementation, call <xref:Microsoft.Extensions.DependencyInjection.AuthenticationServiceCollectionExtensions.AddAuthentication*> to add authentication services:
 
@@ -483,6 +500,8 @@ To configure an app for out-of-process hosting, use either of the following appr
   <AspNetCoreHostingModel>OutOfProcess</AspNetCoreHostingModel>
 </PropertyGroup>
 ```
+
+The value is case insensitive, so `inprocess` and `outofprocess` are valid values.
 
 [Kestrel](xref:fundamentals/servers/kestrel) server is used instead of IIS HTTP Server (`IISHttpServer`).
 
@@ -531,7 +550,7 @@ The following *web.config* file is published for a [framework-dependent deployme
                   arguments=".\MyApp.dll"
                   stdoutLogEnabled="false"
                   stdoutLogFile=".\logs\stdout"
-                  hostingModel="InProcess" />
+                  hostingModel="inprocess" />
     </system.webServer>
   </location>
 </configuration>
@@ -550,7 +569,7 @@ The following *web.config* is published for a [self-contained deployment](/dotne
       <aspNetCore processPath=".\MyApp.exe"
                   stdoutLogEnabled="false"
                   stdoutLogFile=".\logs\stdout"
-                  hostingModel="InProcess" />
+                  hostingModel="inprocess" />
     </system.webServer>
   </location>
 </configuration>
@@ -569,13 +588,13 @@ For information on IIS sub-application configuration, see <xref:host-and-deploy/
 | `arguments` | <p>Optional string attribute.</p><p>Arguments to the executable specified in **processPath**.</p> | |
 | `disableStartUpErrorPage` | <p>Optional Boolean attribute.</p><p>If true, the **502.5 - Process Failure** page is suppressed, and the 502 status code page configured in the *web.config* takes precedence.</p> | `false` |
 | `forwardWindowsAuthToken` | <p>Optional Boolean attribute.</p><p>If true, the token is forwarded to the child process listening on %ASPNETCORE_PORT% as a header 'MS-ASPNETCORE-WINAUTHTOKEN' per request. It's the responsibility of that process to call CloseHandle on this token per request.</p> | `true` |
-| `hostingModel` | <p>Optional string attribute.</p><p>Specifies the hosting model as in-process (`InProcess`) or out-of-process (`OutOfProcess`).</p> | `OutOfProcess` |
+| `hostingModel` | <p>Optional string attribute.</p><p>Specifies the hosting model as in-process (`InProcess`/`inprocess`) or out-of-process (`OutOfProcess`/`outofprocess`).</p> | `OutOfProcess`<br>`outofprocess` |
 | `processesPerApplication` | <p>Optional integer attribute.</p><p>Specifies the number of instances of the process specified in the **processPath** setting that can be spun up per app.</p><p>&dagger;For in-process hosting, the value is limited to `1`.</p><p>Setting `processesPerApplication` is discouraged. This attribute will be removed in a future release.</p> | Default: `1`<br>Min: `1`<br>Max: `100`&dagger; |
 | `processPath` | <p>Required string attribute.</p><p>Path to the executable that launches a process listening for HTTP requests. Relative paths are supported. If the path begins with `.`, the path is considered to be relative to the site root.</p> | |
 | `rapidFailsPerMinute` | <p>Optional integer attribute.</p><p>Specifies the number of times the process specified in **processPath** is allowed to crash per minute. If this limit is exceeded, the module stops launching the process for the remainder of the minute.</p><p>Not supported with in-process hosting.</p> | Default: `10`<br>Min: `0`<br>Max: `100` |
 | `requestTimeout` | <p>Optional timespan attribute.</p><p>Specifies the duration for which the ASP.NET Core Module waits for a response from the process listening on %ASPNETCORE_PORT%.</p><p>In versions of the ASP.NET Core Module that shipped with the release of ASP.NET Core 2.1 or later, the `requestTimeout` is specified in hours, minutes, and seconds.</p><p>Doesn't apply to in-process hosting. For in-process hosting, the module waits for the app to process the request.</p><p>Valid values for minutes and seconds segments of the string are in the range 0-59. Use of **60** in the value for minutes or seconds results in a *500 - Internal Server Error*.</p> | Default: `00:02:00`<br>Min: `00:00:00`<br>Max: `360:00:00` |
 | `shutdownTimeLimit` | <p>Optional integer attribute.</p><p>Duration in seconds that the module waits for the executable to gracefully shutdown when the *app_offline.htm* file is detected.</p> | Default: `10`<br>Min: `0`<br>Max: `600` |
-| `startupTimeLimit` | <p>Optional integer attribute.</p><p>Duration in seconds that the module waits for the executable to start a process listening on the port. If this time limit is exceeded, the module kills the process. The module attempts to relaunch the process when it receives a new request and continues to attempt to restart the process on subsequent incoming requests unless the app fails to start **rapidFailsPerMinute** number of times in the last rolling minute.</p><p>A value of 0 (zero) is **not** considered an infinite timeout.</p> | Default: `120`<br>Min: `0`<br>Max: `3600` |
+| `startupTimeLimit` | <p>Optional integer attribute.</p><p>Duration in seconds that the module waits for the executable to start a process listening on the port. If this time limit is exceeded, the module kills the process.</p><p>When hosting *in-process*: The process is **not** restarted and does **not** use the **rapidFailsPerMinute** setting.</p><p>When hosting *out-of-process*: The module attempts to relaunch the process when it receives a new request and continues to attempt to restart the process on subsequent incoming requests unless the app fails to start **rapidFailsPerMinute** number of times in the last rolling minute.</p><p>A value of 0 (zero) is **not** considered an infinite timeout.</p> | Default: `120`<br>Min: `0`<br>Max: `3600` |
 | `stdoutLogEnabled` | <p>Optional Boolean attribute.</p><p>If true, **stdout** and **stderr** for the process specified in **processPath** are redirected to the file specified in **stdoutLogFile**.</p> | `false` |
 | `stdoutLogFile` | <p>Optional string attribute.</p><p>Specifies the relative or absolute file path for which **stdout** and **stderr** from the process specified in **processPath** are logged. Relative paths are relative to the root of the site. Any path starting with `.` are relative to the site root and all other paths are treated as absolute paths. Any folders provided in the path are created by the module when the log file is created. Using underscore delimiters, a timestamp, process ID, and file extension (*.log*) are added to the last segment of the **stdoutLogFile** path. If `.\logs\stdout` is supplied as a value, an example stdout log is saved as *stdout_20180205194132_1934.log* in the *logs* folder when saved on 2/5/2018 at 19:41:32 with a process ID of 1934.</p> | `aspnetcore-stdout` |
 
@@ -589,8 +608,8 @@ The following example sets two environment variables. `ASPNETCORE_ENVIRONMENT` c
 <aspNetCore processPath="dotnet"
       arguments=".\MyApp.dll"
       stdoutLogEnabled="false"
-      stdoutLogFile="\\?\%home%\LogFiles\stdout"
-      hostingModel="InProcess">
+      stdoutLogFile=".\logs\stdout"
+      hostingModel="inprocess">
   <environmentVariables>
     <environmentVariable name="ASPNETCORE_ENVIRONMENT" value="Development" />
     <environmentVariable name="CONFIG_DIR" value="f:\application_config" />
@@ -599,7 +618,7 @@ The following example sets two environment variables. `ASPNETCORE_ENVIRONMENT` c
 ```
 
 > [!NOTE]
-> An alternative to setting the environment directly in *web.config* is to include the `<EnvironmentName>` property in the publish profile (*.pubxml*) or project file. This approach sets the environment in *web.config* when the project is published:
+> An alternative to setting the environment directly in *web.config* is to include the `<EnvironmentName>` property in the [publish profile (.pubxml)](xref:host-and-deploy/visual-studio-publish-profiles) or project file. This approach sets the environment in *web.config* when the project is published:
 >
 > ```xml
 > <PropertyGroup>
@@ -636,22 +655,28 @@ The ASP.NET Core Module redirects stdout and stderr console output to disk if th
 
 Logs aren't rotated, unless process recycling/restart occurs. It's the responsibility of the hoster to limit the disk space the logs consume.
 
-Using the stdout log is only recommended for troubleshooting app startup issues. Don't use the stdout log for general app logging purposes. For routine logging in an ASP.NET Core app, use a logging library that limits log file size and rotates logs. For more information, see [third-party logging providers](xref:fundamentals/logging/index#third-party-logging-providers).
+Using the stdout log is only recommended for troubleshooting app startup issues when hosting on IIS or when using [development-time support for IIS with Visual Studio](xref:host-and-deploy/iis/development-time-iis-support), not while debugging locally and running the app with IIS Express.
+
+Don't use the stdout log for general app logging purposes. For routine logging in an ASP.NET Core app, use a logging library that limits log file size and rotates logs. For more information, see [third-party logging providers](xref:fundamentals/logging/index#third-party-logging-providers).
 
 A timestamp and file extension are added automatically when the log file is created. The log file name is composed by appending the timestamp, process ID, and file extension (*.log*) to the last segment of the `stdoutLogFile` path (typically *stdout*) delimited by underscores. If the `stdoutLogFile` path ends with *stdout*, a log for an app with a PID of 1934 created on 2/5/2018 at 19:42:32 has the file name *stdout_20180205194132_1934.log*.
 
 If `stdoutLogEnabled` is false, errors that occur on app startup are captured and emitted to the event log up to 30 KB. After startup, all additional logs are discarded.
 
-The following sample `aspNetCore` element configures stdout logging for an app hosted in Azure App Service. A local path or network share path is acceptable for local logging. Confirm that the AppPool user identity has permission to write to the path provided.
+The following sample `aspNetCore` element configures stdout logging at the relative path `.\log\`. Confirm that the AppPool user identity has permission to write to the path provided.
 
 ```xml
 <aspNetCore processPath="dotnet"
     arguments=".\MyApp.dll"
     stdoutLogEnabled="true"
-    stdoutLogFile="\\?\%home%\LogFiles\stdout"
-    hostingModel="InProcess">
+    stdoutLogFile=".\logs\stdout"
+    hostingModel="inprocess">
 </aspNetCore>
 ```
+
+When publishing an app for Azure App Service deployment, the Web SDK sets the `stdoutLogFile` value to `\\?\%home%\LogFiles\stdout`. The `%home` environment variable is predefined for apps hosted by Azure App Service.
+
+For more information on path formats, see [File path formats on Windows systems](/dotnet/standard/io/file-path-formats).
 
 ## Enhanced diagnostic logs
 
@@ -662,7 +687,7 @@ The ASP.NET Core Module is configurable to provide enhanced diagnostics logs. Ad
     arguments=".\MyApp.dll"
     stdoutLogEnabled="false"
     stdoutLogFile="\\?\%home%\LogFiles\stdout"
-    hostingModel="InProcess">
+    hostingModel="inprocess">
   <handlerSettings>
     <handlerSetting name="debugFile" value=".\logs\aspnetcore-debug.log" />
     <handlerSetting name="debugLevel" value="FILE,TRACE" />
@@ -689,8 +714,8 @@ Locations (multiple locations are permitted):
 
 The handler settings can also be provided via environment variables:
 
-* `ASPNETCORE_MODULE_DEBUG_FILE` &ndash; Path to the debug log file. (Default: *aspnetcore-debug.log*)
-* `ASPNETCORE_MODULE_DEBUG` &ndash; Debug level setting.
+* `ASPNETCORE_MODULE_DEBUG_FILE`: Path to the debug log file. (Default: *aspnetcore-debug.log*)
+* `ASPNETCORE_MODULE_DEBUG`: Debug level setting.
 
 > [!WARNING]
 > Do **not** leave debug logging enabled in the deployment for longer than required to troubleshoot an issue. The size of the log isn't limited. Leaving the debug log enabled can exhaust the available disk space and crash the server or app service.
@@ -921,23 +946,27 @@ The ASP.NET Core Module redirects stdout and stderr console output to disk if th
 
 Logs aren't rotated, unless process recycling/restart occurs. It's the responsibility of the hoster to limit the disk space the logs consume.
 
-Using the stdout log is only recommended for troubleshooting app startup issues. Don't use the stdout log for general app logging purposes. For routine logging in an ASP.NET Core app, use a logging library that limits log file size and rotates logs. For more information, see [third-party logging providers](xref:fundamentals/logging/index#third-party-logging-providers).
+Using the stdout log is only recommended for troubleshooting app startup issues when hosting on IIS or when using [development-time support for IIS with Visual Studio](xref:host-and-deploy/iis/development-time-iis-support), not while debugging locally and running the app with IIS Express.
+
+Don't use the stdout log for general app logging purposes. For routine logging in an ASP.NET Core app, use a logging library that limits log file size and rotates logs. For more information, see [third-party logging providers](xref:fundamentals/logging/index#third-party-logging-providers).
 
 A timestamp and file extension are added automatically when the log file is created. The log file name is composed by appending the timestamp, process ID, and file extension (*.log*) to the last segment of the `stdoutLogFile` path (typically *stdout*) delimited by underscores. If the `stdoutLogFile` path ends with *stdout*, a log for an app with a PID of 1934 created on 2/5/2018 at 19:42:32 has the file name *stdout_20180205194132_1934.log*.
 
-The following sample `aspNetCore` element configures stdout logging for an app hosted in Azure App Service. A local path or network share path is acceptable for local logging. Confirm that the AppPool user identity has permission to write to the path provided.
+The following sample `aspNetCore` element configures stdout logging at the relative path `.\log\`. Confirm that the AppPool user identity has permission to write to the path provided.
 
 ```xml
 <aspNetCore processPath="dotnet"
     arguments=".\MyApp.dll"
     stdoutLogEnabled="true"
-    stdoutLogFile="\\?\%home%\LogFiles\stdout">
+    stdoutLogFile=".\logs\stdout">
 </aspNetCore>
 ```
 
-Folders in the path provided to the `<handlerSetting>` value (*logs* in the preceding example) aren't created by the module automatically and should pre-exist in the deployment. The app pool must have write access to the location where the logs are written (use `IIS AppPool\<app_pool_name>` to provide write permission).
+When publishing an app for Azure App Service deployment, the Web SDK sets the `stdoutLogFile` value to `\\?\%home%\LogFiles\stdout`. The `%home` environment variable is predefined for apps hosted by Azure App Service.
 
-See [Configuration with web.config](#configuration-with-webconfig) for an example of the `aspNetCore` element in the *web.config* file.
+To create logging filter rules, see the [Configuration](xref:fundamentals/logging/index#log-filtering) and [Log filtering](xref:fundamentals/logging/index#log-filtering) sections of the ASP.NET Core logging documentation.
+
+For more information on path formats, see [File path formats on Windows systems](/dotnet/standard/io/file-path-formats).
 
 ## Proxy configuration uses HTTP protocol and a pairing token
 
@@ -1012,5 +1041,6 @@ The files can be found by searching for *aspnetcore* in the *applicationHost.con
 ## Additional resources
 
 * <xref:host-and-deploy/iis/index>
-* [ASP.NET Core Module GitHub repository (reference source)](https://github.com/aspnet/AspNetCoreModule)
+* <xref:host-and-deploy/azure-apps/index>
+* [ASP.NET Core Module reference source (master branch)](https://github.com/dotnet/aspnetcore/tree/master/src/Servers/IIS/AspNetCoreModuleV2): Use the **Branch** drop down list to select a specific release (for example, `release/3.1`).
 * <xref:host-and-deploy/iis/modules>

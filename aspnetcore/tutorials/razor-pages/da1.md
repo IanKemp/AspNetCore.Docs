@@ -1,12 +1,13 @@
 ---
-title: Update the generated pages in an ASP.NET Core app
+title: Part 5, update the generated pages in an ASP.NET Core app
 author: rick-anderson
-description: Learn how to update the generated pages in an ASP.NET Core app.
+description: Part 5 of tutorial series on Razor Pages.
 ms.author: riande
 ms.date: 12/20/2018
+no-loc: ["ASP.NET Core Identity", cookie, Cookie, Blazor, "Blazor Server", "Blazor WebAssembly", "Identity", "Let's Encrypt", Razor, SignalR]
 uid: tutorials/razor-pages/da1
 ---
-# Update the generated pages in an ASP.NET Core app
+# Part 5, update the generated pages in an ASP.NET Core app
 
 By [Rick Anderson](https://twitter.com/RickAndMSFT)
 
@@ -48,6 +49,8 @@ Use **View Source** from your favorite browser to examine the generated markup. 
 ```
 
 The dynamically-generated links pass the movie ID with a query string (for example, the `?id=1` in  `https://localhost:5001/Movies/Details?id=1`).
+
+### Add route template
 
 Update the Edit, Details, and Delete Razor Pages to use the "{id:int}" route template. Change the page directive for each of these pages from `@page` to `@page "{id:int}"`. Run the app and then view source. The generated HTML adds the ID to the path portion of the URL:
 

@@ -6,13 +6,14 @@ monikerRange: '>= aspnetcore-2.1'
 ms.author: riande
 ms.custom: mvc
 ms.date: 9/25/2019
+no-loc: ["ASP.NET Core Identity", cookie, Cookie, Blazor, "Blazor Server", "Blazor WebAssembly", "Identity", "Let's Encrypt", Razor, SignalR]
 uid: mvc/compatibility-version
 ---
 # Compatibility version for ASP.NET Core MVC
 
 By [Rick Anderson](https://twitter.com/RickAndMSFT)
 
-::: moniker range="= aspnetcore-3.0"
+::: moniker range=">= aspnetcore-3.0"
 
 The <xref:Microsoft.Extensions.DependencyInjection.MvcCoreMvcBuilderExtensions.SetCompatibilityVersion*> method is a no-op for ASP.NET Core 3.0 apps. That is, calling `SetCompatibilityVersion` with any value of <xref:Microsoft.AspNetCore.Mvc.CompatibilityVersion> has no impact on the application.
 

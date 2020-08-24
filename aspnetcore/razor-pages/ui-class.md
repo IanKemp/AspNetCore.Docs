@@ -2,10 +2,10 @@
 title: Reusable Razor UI in class libraries with ASP.NET Core
 author: Rick-Anderson
 description: Explains how to create reusable Razor UI using partial views in a class library in ASP.NET Core.
-monikerRange: '>= aspnetcore-2.1'
 ms.author: riande
-ms.date: 09/21/2019
+ms.date: 01/25/2020
 ms.custom: "mvc, seodec18"
+no-loc: ["ASP.NET Core Identity", cookie, Cookie, Blazor, "Blazor Server", "Blazor WebAssembly", "Identity", "Let's Encrypt", Razor, SignalR]
 uid: razor-pages/ui-class
 ---
 # Create reusable UI using the Razor class library project in ASP.NET Core
@@ -14,21 +14,20 @@ By [Rick Anderson](https://twitter.com/RickAndMSFT)
 
 ::: moniker range=">= aspnetcore-3.0"
 
-Razor views, pages, controllers, page models, [Razor components](xref:blazor/class-libraries), [View components](xref:mvc/views/view-components), and data models can be built into a Razor class library (RCL). The RCL can be packaged and reused. Applications can include the RCL and override the views and pages it contains. When a view, partial view, or Razor Page is found in both the web app and the RCL, the Razor markup (*.cshtml* file) in the web app takes precedence.
+Razor views, pages, controllers, page models, [Razor components](xref:blazor/components/class-libraries), [View components](xref:mvc/views/view-components), and data models can be built into a Razor class library (RCL). The RCL can be packaged and reused. Applications can include the RCL and override the views and pages it contains. When a view, partial view, or Razor Page is found in both the web app and the RCL, the Razor markup (*.cshtml* file) in the web app takes precedence.
 
-[View or download sample code](https://github.com/aspnet/AspNetCore.Docs/tree/master/aspnetcore/razor-pages/ui-class/samples) ([how to download](xref:index#how-to-download-a-sample))
+[View or download sample code](https://github.com/dotnet/AspNetCore.Docs/tree/master/aspnetcore/razor-pages/ui-class/samples) ([how to download](xref:index#how-to-download-a-sample))
 
 ## Create a class library containing Razor UI
 
 # [Visual Studio](#tab/visual-studio)
 
-* From the Visual Studio **File** menu, select **New** > **Project**.
-* Select **ASP.NET Core Web Application**.
-* Name the library (for example, "RazorClassLib") > **OK**. To avoid a file name collision with the generated view library, ensure the library name doesn't end in `.Views`.
-* Verify **ASP.NET Core 3.0** or later is selected.
-* Select **Razor Class Library** > **OK**.
+* From Visual Studio select **Create new a new project**.
+* Select **Razor Class Library** > **Next**.
+* Name the library (for example, "RazorClassLib"), > **Create**. To avoid a file name collision with the generated view library, ensure the library name doesn't end in `.Views`.
+* Select **Support pages and views** if you need to support views. By default, only Razor Pages are supported. Select **Create**.
 
-The Razor class library (RCL) template defaults to Razor component development by default. A template option in Visual Studio provides template support for pages and views.
+The Razor class library (RCL) template defaults to Razor component development by default. The **Support pages and views** option supports pages and views.
 
 # [.NET Core CLI](#tab/netcore-cli)
 
@@ -38,7 +37,7 @@ From the command line, run `dotnet new razorclasslib`. For example:
 dotnet new razorclasslib -o RazorUIClassLib
 ```
 
-The Razor class library (RCL) template defaults to Razor component development by default. Pass the `-support-pages-and-views` option (`dotnet new razorclasslib -support-pages-and-views`) to provide support for pages and views.
+The Razor class library (RCL) template defaults to Razor component development by default. Pass the `--support-pages-and-views` option (`dotnet new razorclasslib --support-pages-and-views`) to provide support for pages and views.
 
 For more information, see [dotnet new](/dotnet/core/tools/dotnet-new). To avoid a file name collision with the generated view library, ensure the library name doesn't end in `.Views`.
 
@@ -82,11 +81,13 @@ Suppose *RazorUIClassLib/Pages/Shared* contains two partial files: *_Header.csht
 
 ## Create an RCL with static assets
 
-An RCL may require companion static assets that can be referenced by the consuming app of the RCL. ASP.NET Core allows creating RCLs that include static assets that are available to a consuming app.
+An RCL may require companion static assets that can be referenced by either the RCL or the consuming app of the RCL. ASP.NET Core allows creating RCLs that include static assets that are available to a consuming app.
 
 To include companion assets as part of an RCL, create a *wwwroot* folder in the class library and include any required files in that folder.
 
 When packing an RCL, all companion assets in the *wwwroot* folder are automatically included in the package.
+
+Use the `dotnet pack` command rather than the NuGet.exe version `nuget pack`.
 
 ### Exclude static assets
 
@@ -116,14 +117,14 @@ To include TypeScript files in an RCL:
 
    ```xml
    <ResolveCurrentProjectStaticWebAssetsInputsDependsOn>
-     TypeScriptCompile;
+     CompileTypeScript;
      $(ResolveCurrentProjectStaticWebAssetsInputs)
    </ResolveCurrentProjectStaticWebAssetsInputsDependsOn>
    ```
 
 ### Consume content from a referenced RCL
 
-The files included in the *wwwroot* folder of the RCL are exposed to the consuming app under the prefix `_content/{LIBRARY NAME}/`. For example, a library named *Razor.Class.Lib* results in a path to static content at `_content/Razor.Class.Lib/`.
+The files included in the *wwwroot* folder of the RCL are exposed to either the RCL or the consuming app under the prefix `_content/{LIBRARY NAME}/`. For example, a library named *Razor.Class.Lib* results in a path to static content at `_content/Razor.Class.Lib/`. When producing a NuGet package and the assembly name isn't the same as the package ID, use the package ID for `{LIBRARY NAME}`.
 
 The consuming app references static assets provided by the library with `<script>`, `<style>`, `<img>`, and other HTML tags. The consuming app must have [static file support](xref:fundamentals/static-files) enabled in `Startup.Configure`:
 
@@ -180,9 +181,9 @@ When the app is published, the companion assets from all referenced projects and
 
 ::: moniker range="< aspnetcore-3.0"
 
-Razor views, pages, controllers, page models, [Razor components](xref:blazor/class-libraries), [View components](xref:mvc/views/view-components), and data models can be built into a Razor class library (RCL). The RCL can be packaged and reused. Applications can include the RCL and override the views and pages it contains. When a view, partial view, or Razor Page is found in both the web app and the RCL, the Razor markup (*.cshtml* file) in the web app takes precedence.
+Razor views, pages, controllers, page models, [Razor components](xref:blazor/components/class-libraries), [View components](xref:mvc/views/view-components), and data models can be built into a Razor class library (RCL). The RCL can be packaged and reused. Applications can include the RCL and override the views and pages it contains. When a view, partial view, or Razor Page is found in both the web app and the RCL, the Razor markup (*.cshtml* file) in the web app takes precedence.
 
-[View or download sample code](https://github.com/aspnet/AspNetCore.Docs/tree/master/aspnetcore/razor-pages/ui-class/samples) ([how to download](xref:index#how-to-download-a-sample))
+[View or download sample code](https://github.com/dotnet/AspNetCore.Docs/tree/master/aspnetcore/razor-pages/ui-class/samples) ([how to download](xref:index#how-to-download-a-sample))
 
 ## Create a class library containing Razor UI
 
@@ -223,7 +224,7 @@ The RCL can be referenced by:
 
 ## Walkthrough: Create an RCL project and use from a Razor Pages project
 
-You can download the [complete project](https://github.com/aspnet/AspNetCore.Docs/tree/master/aspnetcore/razor-pages/ui-class/samples) and test it rather than creating it. The sample download contains additional code and links that make the project easy to test. You can leave feedback in [this GitHub issue](https://github.com/aspnet/AspNetCore.Docs/issues/6098) with your comments on download samples versus step-by-step instructions.
+You can download the [complete project](https://github.com/dotnet/AspNetCore.Docs/tree/master/aspnetcore/razor-pages/ui-class/samples) and test it rather than creating it. The sample download contains additional code and links that make the project easy to test. You can leave feedback in [this GitHub issue](https://github.com/dotnet/AspNetCore.Docs/issues/6098) with your comments on download samples versus step-by-step instructions.
 
 ### Test the download app
 
@@ -383,3 +384,7 @@ Suppose *RazorUIClassLib/Pages/Shared* contains two partial files: *_Header.csht
 ```
 
 ::: moniker-end
+
+## Additional resources
+
+* <xref:blazor/components/class-libraries>

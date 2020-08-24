@@ -4,7 +4,8 @@ author: ardalis
 description: Learn how to format response data in ASP.NET Core Web API.
 ms.author: riande
 ms.custom: H1Hack27Feb2017
-ms.date: 8/22/2019
+ms.date: 04/17/2020
+no-loc: ["ASP.NET Core Identity", cookie, Cookie, Blazor, "Blazor Server", "Blazor WebAssembly", "Identity", "Let's Encrypt", Razor, SignalR]
 uid: web-api/advanced/formatting
 ---
 # Format response data in ASP.NET Core Web API
@@ -13,7 +14,7 @@ By [Rick Anderson](https://twitter.com/RickAndMSFT) and [Steve Smith](https://ar
 
 ASP.NET Core MVC has support for formatting response data. Response data can be formatted using specific formats or in response to client requested format.
 
-[View or download sample code](https://github.com/aspnet/AspNetCore.Docs/tree/master/aspnetcore/web-api/advanced/formatting) ([how to download](xref:index#how-to-download-a-sample))
+[View or download sample code](https://github.com/dotnet/AspNetCore.Docs/tree/master/aspnetcore/web-api/advanced/formatting) ([how to download](xref:index#how-to-download-a-sample))
 
 ## Format-specific Action Results
 
@@ -29,7 +30,7 @@ The sample download returns the list of authors. Using the F12 browser developer
 * The response header containing **content-type:** `application/json; charset=utf-8` is displayed.
 * The request headers are displayed. For example, the `Accept` header. The `Accept` header is ignored by the preceding code.
 
-To return plain text formatted data, use <xref:Microsoft.AspNetCore.Mvc.ContentResult.Content> and the <xref:Microsoft.AspNetCore.Mvc.ContentResult.Content> helper:
+To return plain text formatted data, use <xref:Microsoft.AspNetCore.Mvc.ContentResult> and the <xref:Microsoft.AspNetCore.Mvc.ControllerBase.Content%2A> helper:
 
 [!code-csharp[](./formatting/sample/Controllers/AuthorsController.cs?name=snippet_about)]
 
@@ -52,9 +53,7 @@ The following action method uses the `Ok` and `NotFound` helper methods:
 
 [!code-csharp[](./formatting/sample/Controllers/AuthorsController.cs?name=snippet_search)]
 
-A JSON-formatted response is returned unless another format was requested and the server can return the requested format. Tools such as [Fiddler](https://www.telerik.com/fiddler) or [Postman](https://www.getpostman.com/tools) can set the `Accept` header to specify the return format. When the `Accept` contains a type the server supports, that type is returned.
-
-By default, ASP.NET Core only supports JSON. For apps not changing the default, JSON-formatted responses are alway returned regardless of the client request. The next section shows how to add additional formatters.
+By default, ASP.NET Core supports `application/json`, `text/json`, and `text/plain` media types. Tools such as [Fiddler](https://www.telerik.com/fiddler) or [Postman](https://www.getpostman.com/tools) can set the `Accept` request header to specify the return format. When the `Accept` header contains a type the server supports, that type is returned. The next section shows how to add additional formatters.
 
 Controller actions can return POCOs (Plain Old CLR Objects). When a POCO is returned, the runtime automatically creates an `ObjectResult` that wraps the object. The client gets the formatted serialized object. If the object being returned is `null`, a `204 No Content` response is returned.
 
@@ -116,7 +115,7 @@ XML formatters implemented using <xref:System.Xml.Serialization.XmlSerializer> a
 
 The preceding code serializes results using `XmlSerializer`.
 
-When using the preceding code, controller methods should return the appropriate format based on the request's `Accept` header.
+When using the preceding code, controller methods return the appropriate format based on the request's `Accept` header.
 
 ### Configure System.Text.Json-based formatters
 
@@ -126,10 +125,10 @@ Features for the `System.Text.Json`-based formatters can be configured using `Mi
 services.AddControllers().AddJsonOptions(options =>
 {
     // Use the default property (Pascal) casing.
-    options.SerializerOptions.PropertyNamingPolicy = null;
+    options.JsonSerializerOptions.PropertyNamingPolicy = null;
 
     // Configure a custom converter.
-    options.SerializerOptions.Converters.Add(new MyCustomJsonConverter());
+    options.JsonSerializerOptions.Converters.Add(new MyCustomJsonConverter());
 });
 ```
 
@@ -140,14 +139,14 @@ public IActionResult Get()
 {
     return Json(model, new JsonSerializerOptions
     {
-        options.WriteIndented = true,
+        WriteIndented = true,
     });
 }
 ```
 
 ### Add Newtonsoft.Json-based JSON format support
 
-Prior to ASP.NET Core 3.0, the default used JSON formatters implemented using the `Newtonsoft.Json` package. In ASP.NET Core 3.0 or later, the default JSON formatters are based on `System.Text.Json`. Support for `Newtonsoft.Json` based formatters and features is available by installing the [Microsoft.AspNetCore.Mvc.NewtonsoftJson](https://www.nuget.org/packages/Microsoft.AspNetCore.Mvc.NewtonsoftJson/) NuGet package and configuring it in `Startup.ConfigureServices`.
+Prior to ASP.NET Core 3.0, the default used JSON formatters implemented using the `Newtonsoft.Json` package. In ASP.NET Core 3.0 or later, the default JSON formatters are based on `System.Text.Json`. Support for `Newtonsoft.Json` based formatters and features is available by installing the [`Microsoft.AspNetCore.Mvc.NewtonsoftJson`](https://www.nuget.org/packages/Microsoft.AspNetCore.Mvc.NewtonsoftJson/) NuGet package and configuring it in `Startup.ConfigureServices`.
 
 [!code-csharp[](./formatting/3.0sample/StartupNewtonsoftJson.cs?name=snippet)]
 
@@ -168,7 +167,7 @@ services.AddControllers().AddNewtonsoftJson(options =>
     options.SerializerSettings.ContractResolver = new DefaultContractResolver();
 
     // Configure a custom converter
-    options.SerializerOptions.Converters.Add(new MyCustomJsonConverter());
+    options.SerializerSettings.Converters.Add(new MyCustomJsonConverter());
 });
 ```
 
@@ -179,7 +178,7 @@ public IActionResult Get()
 {
     return Json(model, new JsonSerializerSettings
     {
-        options.Formatting = Formatting.Indented,
+        Formatting = Formatting.Indented,
     });
 }
 ```
@@ -217,16 +216,16 @@ For more information, see [Filters](xref:mvc/controllers/filters).
 
 ### Special case formatters
 
-Some special cases are implemented using built-in formatters. By default, `string` return types are formatted as *text/plain* (*text/html* if requested via the `Accept` header). This behavior can be deleted by removing the <xref:Microsoft.AspNetCore.Mvc.Formatters.TextOutputFormatter>. Formatters are removed in the `Configure` method. Actions that have a model object return type return `204 No Content` when returning `null`. This behavior can be deleted by removing the <xref:Microsoft.AspNetCore.Mvc.Formatters.HttpNoContentOutputFormatter>. The following code removes the `TextOutputFormatter` and `HttpNoContentOutputFormatter`.
+Some special cases are implemented using built-in formatters. By default, `string` return types are formatted as *text/plain* (*text/html* if requested via the `Accept` header). This behavior can be deleted by removing the <xref:Microsoft.AspNetCore.Mvc.Formatters.StringOutputFormatter>. Formatters are removed in the `ConfigureServices` method. Actions that have a model object return type return `204 No Content` when returning `null`. This behavior can be deleted by removing the <xref:Microsoft.AspNetCore.Mvc.Formatters.HttpNoContentOutputFormatter>. The following code removes the `StringOutputFormatter` and `HttpNoContentOutputFormatter`.
 
 ::: moniker range=">= aspnetcore-3.0"
-[!code-csharp[](./formatting/3.0sample/StartupTextOutputFormatter.cs?name=snippet)]
+[!code-csharp[](./formatting/3.0sample/StartupStringOutputFormatter.cs?name=snippet)]
 ::: moniker-end
 ::: moniker range="< aspnetcore-3.0"
-[!code-csharp[](./formatting/sample/StartupTextOutputFormatter.cs?name=snippet)]
+[!code-csharp[](./formatting/sample/StartupStringOutputFormatter.cs?name=snippet)]
 ::: moniker-end
 
-Without the `TextOutputFormatter`, `string` return types return `406 Not Acceptable`. If an XML formatter exists, it formats `string` return types if the `TextOutputFormatter` is removed.
+Without the `StringOutputFormatter`, the built-in JSON formatter formats `string` return types. If the built-in JSON formatter is removed and an XML formatter is available, the XML formatter formats `string` return types. Otherwise, `string` return types return `406 Not Acceptable`.
 
 Without the `HttpNoContentOutputFormatter`, null objects are formatted using the configured formatter. For example:
 

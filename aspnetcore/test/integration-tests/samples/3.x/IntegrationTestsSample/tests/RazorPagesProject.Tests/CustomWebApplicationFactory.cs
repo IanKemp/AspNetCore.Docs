@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
@@ -9,31 +10,26 @@ using RazorPagesProject.Data;
 namespace RazorPagesProject.Tests
 {
     #region snippet1
-    public class CustomWebApplicationFactory<TStartup> 
+    public class CustomWebApplicationFactory<TStartup>
         : WebApplicationFactory<TStartup> where TStartup: class
     {
         protected override void ConfigureWebHost(IWebHostBuilder builder)
         {
             builder.ConfigureServices(services =>
             {
-                // Create a new service provider.
-                var serviceProvider = new ServiceCollection()
-                    .AddEntityFrameworkInMemoryDatabase()
-                    .BuildServiceProvider();
+                var descriptor = services.SingleOrDefault(
+                    d => d.ServiceType ==
+                        typeof(DbContextOptions<ApplicationDbContext>));
 
-                // Add a database context (ApplicationDbContext) using an in-memory 
-                // database for testing.
-                services.AddDbContext<ApplicationDbContext>((options, context) => 
+                services.Remove(descriptor);
+
+                services.AddDbContext<ApplicationDbContext>(options =>
                 {
-                    context.UseInMemoryDatabase("InMemoryDbForTesting")
-                        .UseInternalServiceProvider(serviceProvider);
+                    options.UseInMemoryDatabase("InMemoryDbForTesting");
                 });
 
-                // Build the service provider.
                 var sp = services.BuildServiceProvider();
 
-                // Create a scope to obtain a reference to the database
-                // context (ApplicationDbContext).
                 using (var scope = sp.CreateScope())
                 {
                     var scopedServices = scope.ServiceProvider;
@@ -41,12 +37,10 @@ namespace RazorPagesProject.Tests
                     var logger = scopedServices
                         .GetRequiredService<ILogger<CustomWebApplicationFactory<TStartup>>>();
 
-                    // Ensure the database is created.
                     db.Database.EnsureCreated();
 
                     try
                     {
-                        // Seed the database with test data.
                         Utilities.InitializeDbForTests(db);
                     }
                     catch (Exception ex)

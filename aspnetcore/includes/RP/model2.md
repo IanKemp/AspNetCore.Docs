@@ -1,13 +1,17 @@
 <a name="dc"></a>
 
+### Add NuGet packages and EF tools
+
+[!INCLUDE[](~/includes/add-EF-NuGet-SQLite-CLI.md)]
+
 ### Add a database context class
 
 In the RazorPagesMovie project, create a new folder called *Data*. 
 Add the following `RazorPagesMovieContext` class to the *Data* folder:
 
-[!code-csharp[](~/tutorials/razor-pages/razor-pages-start/sample/RazorPagesMovie22/Data/RazorPagesMovieContext.cs)]
+[!code-csharp[](~/tutorials/razor-pages/razor-pages-start/sample/RazorPagesMovie30/Data/RazorPagesMovieContext.cs)]
 
-The preceding code creates a `DbSet` property for the entity set. In Entity Framework terminology, an entity set typically corresponds to a database table, and an entity corresponds to a row in the table.
+The preceding code creates a `DbSet` property for the entity set. In Entity Framework terminology, an entity set typically corresponds to a database table, and an entity corresponds to a row in the table. The code won't compile until dependencies are added in a later step.
 
 <a name="cs"></a>
 
@@ -19,10 +23,6 @@ Add a connection string to the *appsettings.json* file as shown in the following
 
 [!code-json[](~/tutorials/razor-pages/razor-pages-start/sample/RazorPagesMovie30/appsettings_SQLite.json?highlight=10-12)]
 
-### Add NuGet packages and EF tools
-
-[!INCLUDE[](~/includes/add-EF-NuGet-SQLite-CLI.md)]
-
 <a name="reg"></a>
 
 ### Register the database context
@@ -30,7 +30,7 @@ Add a connection string to the *appsettings.json* file as shown in the following
 Add the following `using` statements at the top of *Startup.cs*:
 
 ```csharp
-using RazorPagesMovie.Models;
+using RazorPagesMovie.Data;
 using Microsoft.EntityFrameworkCore;
 ```
 
@@ -46,7 +46,7 @@ Register the database context with the [dependency injection](xref:fundamentals/
 
 ### Add required NuGet packages
 
-Run the following .NET Core CLI command to add SQLite and CodeGeneration.Design  to the project:
+Run the following .NET Core CLI command to add SQLite and CodeGeneration.Design to the project:
 
 ```dotnetcli
 dotnet add package Microsoft.EntityFrameworkCore.SQLite
@@ -72,4 +72,5 @@ Register the database context with the [dependency injection](xref:fundamentals/
 [!code-csharp[](~/tutorials/razor-pages/razor-pages-start/sample/RazorPagesMovie22/Startup.cs?name=snippet_UseSqlite&highlight=11-12)]
 
 Build the project as a check for errors.
+
 ::: moniker-end

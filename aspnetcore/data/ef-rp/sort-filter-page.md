@@ -1,14 +1,15 @@
 ---
-title: Razor Pages with EF Core in ASP.NET Core - Sort, Filter, Paging - 3 of 8
-author: tdykstra
-description: In this tutorial you'll add sorting, filtering, and paging functionality to a Razor page using ASP.NET Core and Entity Framework Core.
+title: Part 3, Razor Pages with EF Core in ASP.NET Core - Sort, Filter, Paging
+author: rick-anderson
+description: Part 3 of Razor Pages and Entity Framework tutorial series.
 ms.author: riande
 ms.custom: mvc
 ms.date: 07/22/2019
+no-loc: ["ASP.NET Core Identity", cookie, Cookie, Blazor, "Blazor Server", "Blazor WebAssembly", "Identity", "Let's Encrypt", Razor, SignalR]
 uid: data/ef-rp/sort-filter-page
 ---
 
-# Razor Pages with EF Core in ASP.NET Core - Sort, Filter, Paging - 3 of 8
+# Part 3, Razor Pages with EF Core in ASP.NET Core - Sort, Filter, Paging
 
 By [Tom Dykstra](https://github.com/tdykstra), [Rick Anderson](https://twitter.com/RickAndMSFT), and [Jon P Smith](https://twitter.com/thereformedprog)
 
@@ -270,7 +271,7 @@ The following illustration shows a completed page. The column headings are click
 
 ![Students index page](sort-filter-page/_static/paging.png)
 
-If you run into problems you can't solve, download the [completed app](https://github.com/aspnet/AspNetCore.Docs/tree/master/aspnetcore/data/ef-rp/intro/samples).
+If you run into problems you can't solve, download the [completed app](https://github.com/dotnet/AspNetCore.Docs/tree/master/aspnetcore/data/ef-rp/intro/samples).
 
 ## Add sorting to the Index page
 
@@ -324,7 +325,7 @@ The method uses LINQ to Entities to specify the column to sort by. The code init
 
 Replace the code in *Students/Index.cshtml*, with the following highlighted code:
 
-[!code-html[](intro/samples/cu21/Pages/Students/Index2.cshtml?highlight=17-19,25-27)]
+[!code-cshtml[](intro/samples/cu21/Pages/Students/Index2.cshtml?highlight=17-19,25-27)]
 
 The preceding code:
 
@@ -380,7 +381,7 @@ There's a performance penalty for calling `ToUpper`. The `ToUpper` code adds a f
 
 In *Pages/Students/Index.cshtml*, add the following highlighted code to create a **Search** button and assorted chrome.
 
-[!code-html[](intro/samples/cu21/Pages/Students/Index3.cshtml?highlight=14-23&range=1-25)]
+[!code-cshtml[](intro/samples/cu21/Pages/Students/Index3.cshtml?highlight=14-23&range=1-25)]
 
 The preceding code uses the `<form>` [tag helper](xref:mvc/views/tag-helpers/intro) to add the search text box and button. By default, the `<form>` tag helper submits form data with a POST. With POST, the parameters are passed in the HTTP message body and not in the URL. When HTTP GET is used, the form data is passed in the URL as query strings. Passing the data with query strings enables users to bookmark the URL. The [W3C guidelines](https://www.w3.org/2001/tag/doc/whenToUseGet.html) recommend that GET should be used when the action doesn't result in an update.
 
@@ -458,15 +459,15 @@ The two question marks in `PaginatedList.CreateAsync` represent the [null-coales
 
 Update the markup in *Students/Index.cshtml*. The changes are highlighted:
 
-[!code-html[](intro/samples/cu21/Pages/Students/Index.cshtml?highlight=28-31,37-40,68-999)]
+[!code-cshtml[](intro/samples/cu21/Pages/Students/Index.cshtml?highlight=28-31,37-40,68-999)]
 
 The column header links use the query string to pass the current search string to the `OnGetAsync` method so that the user can sort within filter results:
 
-[!code-html[](intro/samples/cu21/Pages/Students/Index.cshtml?range=28-31)]
+[!code-cshtml[](intro/samples/cu21/Pages/Students/Index.cshtml?range=28-31)]
 
 The paging buttons are displayed by tag helpers:
 
-[!code-html[](intro/samples/cu21/Pages/Students/Index.cshtml?range=72-)]
+[!code-cshtml[](intro/samples/cu21/Pages/Students/Index.cshtml?range=72-)]
 
 Run the app and navigate to the students page.
 
@@ -512,17 +513,17 @@ The LINQ statement groups the student entities by enrollment date, calculates th
 
 Replace the code in the *Pages/About.cshtml* file with the following code:
 
-[!code-html[](intro/samples/cu21/Pages/About.cshtml)]
+[!code-cshtml[](intro/samples/cu21/Pages/About.cshtml)]
 
 Run the app and navigate to the About page. The count of students for each enrollment date is displayed in a table.
 
-If you run into problems you can't solve, download the [completed app for this stage](https://github.com/aspnet/AspNetCore.Docs/tree/master/aspnetcore/data/ef-rp/intro/samples/StageSnapShots/cu-part3-sorting).
+If you run into problems you can't solve, download the [completed app for this stage](https://github.com/dotnet/AspNetCore.Docs/tree/master/aspnetcore/data/ef-rp/intro/samples/StageSnapShots/cu-part3-sorting).
 
 ![About page](sort-filter-page/_static/about.png)
 
 ## Additional resources
 
-* [Debugging ASP.NET Core 2.x source](https://github.com/aspnet/AspNetCore.Docs/issues/4155)
+* [Debugging ASP.NET Core 2.x source](https://github.com/dotnet/AspNetCore.Docs/issues/4155)
 * [YouTube version of this tutorial](https://www.youtube.com/watch?v=MDs7PFpoMqI)
 
 In the next tutorial, the app uses migrations to update the data model.

@@ -1,12 +1,13 @@
 ---
-title: Work with a database and ASP.NET Core
+title: Part 4, with a database and ASP.NET Core
 author: rick-anderson
-description: Explains working with a database and ASP.NET Core.
+description: Part 4 of tutorial series on Razor Pages.
 ms.author: riande
 ms.date: 7/22/2019
+no-loc: ["ASP.NET Core Identity", cookie, Cookie, Blazor, "Blazor Server", "Blazor WebAssembly", "Identity", "Let's Encrypt", Razor, SignalR]
 uid: tutorials/razor-pages/sql
 ---
-# Work with a database and ASP.NET Core
+# Part 4, with a database and ASP.NET Core
 
 By [Rick Anderson](https://twitter.com/RickAndMSFT) and [Joe Audette](https://twitter.com/joeaudette)
 
@@ -32,7 +33,7 @@ The ASP.NET Core [Configuration](xref:fundamentals/configuration/index) system r
 
 The name value for the database (`Database={Database name}`) will be different for your generated code. The name value is arbitrary.
 
-[!code-json[](razor-pages-start/sample/RazorPagesMovie30/appsettings.json)]
+[!code-json[](razor-pages-start/sample/RazorPagesMovie30/appsettings.json?highlight=10-12)]
 
 # [Visual Studio Code / Visual Studio for Mac](#tab/visual-studio-code+visual-studio-mac)
 
@@ -46,7 +47,7 @@ When the app is deployed to a test or production server, an environment variable
 
 ## SQL Server Express LocalDB
 
-LocalDB is a lightweight version of the SQL Server Express database engine that's targeted for program development. LocalDB starts on demand and runs in user mode, so there's no complex configuration. By default, LocalDB database creates `*.mdf` files in the `C:/Users/<user/>` directory.
+LocalDB is a lightweight version of the SQL Server Express database engine that's targeted for program development. LocalDB starts on demand and runs in user mode, so there's no complex configuration. By default, LocalDB database creates `*.mdf` files in the `C:\Users\<user>\` directory.
 
 <a name="ssox"></a>
 * From the **View** menu, open **SQL Server Object Explorer** (SSOX).
@@ -101,10 +102,10 @@ The following code shows the updated *Program.cs* file.
 
 [!code-csharp[](razor-pages-start/sample/RazorPagesMovie30/Program.cs)]
 
-A production app would not call `Database.Migrate`. It's added to the preceding code to prevent the following exception when `Update-Database` has not been run:
+The following exception occurs when `Update-Database` has not been run:
 
-SqlException: Cannot open database "RazorPagesMovieContext-21" requested by the login. The login failed.
-Login failed for user 'user name'.
+> `SqlException: Cannot open database "RazorPagesMovieContext-" requested by the login. The login failed.`
+> `Login failed for user 'user name'.`
 
 ### Test the app
 

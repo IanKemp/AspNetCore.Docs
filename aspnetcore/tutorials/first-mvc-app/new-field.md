@@ -1,13 +1,14 @@
 ---
-title: Add a new field to an ASP.NET Core MVC app
+title: Part 8, add a new field to an ASP.NET Core MVC app
 author: rick-anderson
-description: Learn how to use Entity Framework Code First Migrations to add a new field to a model and migrate that change to a database.
+description: Part 8 of tutorial series on ASP.NET Core MVC.
 ms.author: riande
 ms.custom: mvc
 ms.date: 12/13/2018
+no-loc: ["ASP.NET Core Identity", cookie, Cookie, Blazor, "Blazor Server", "Blazor WebAssembly", "Identity", "Let's Encrypt", Razor, SignalR]
 uid: tutorials/first-mvc-app/new-field
 ---
-# Add a new field to an ASP.NET Core MVC app
+# Part 8, add a new field to an ASP.NET Core MVC app
 
 By [Rick Anderson](https://twitter.com/RickAndMSFT)
 
@@ -55,7 +56,7 @@ Update the view templates in order to display, create, and edit the new `Rating`
 
 Edit the */Views/Movies/Index.cshtml* file and add a `Rating` field:
 
-[!code-HTML[](~/tutorials/first-mvc-app/start-mvc/sample/MvcMovie22/Views/Movies/IndexGenreRating.cshtml?highlight=16,38&range=24-64)]
+[!code-cshtml[](~/tutorials/first-mvc-app/start-mvc/sample/MvcMovie22/Views/Movies/IndexGenreRating.cshtml?highlight=16,38&range=24-64)]
 
 Update the */Views/Movies/Create.cshtml* with a `Rating` field.
 
@@ -125,7 +126,7 @@ dotnet ef database update
 ---
 <!-- End of VS tabs -->
 
-Run the app and verify you can create/edit/display movies with a `Rating` field. You should add the `Rating` field to the `Edit`, `Details`, and `Delete` view templates.
+Run the app and verify you can create, edit, and display movies with a `Rating` field.
 
 > [!div class="step-by-step"]
 > [Previous](search.md)

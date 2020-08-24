@@ -4,14 +4,15 @@ author: jamesnk
 description: Learn how gRPC compares with HTTP APIs and what it's recommend scenarios are.
 monikerRange: '>= aspnetcore-3.0'
 ms.author: jamesnk
-ms.date: 09/25/2019
+ms.date: 12/05/2019
+no-loc: ["ASP.NET Core Identity", cookie, Cookie, Blazor, "Blazor Server", "Blazor WebAssembly", "Identity", "Let's Encrypt", Razor, SignalR]
 uid: grpc/comparison
 ---
 # Compare gRPC services with HTTP APIs
 
 By [James Newton-King](https://twitter.com/jamesnk)
 
-This article explains how [gRPC services](https://grpc.io/docs/guides/) compare to HTTP APIs (including ASP.NET Core [web APIs](xref:web-api/index)). The technology used to provide an API for your app is an important choice, and gRPC offers unique benefits compared to HTTP APIs. This article discusses the strengths and weaknesses of gRPC and recommends scenarios for using gRPC over other technologies.
+This article explains how [gRPC services](https://grpc.io/docs/guides/) compare to HTTP APIs with JSON (including ASP.NET Core [web APIs](xref:web-api/index)). The technology used to provide an API for your app is an important choice, and gRPC offers unique benefits compared to HTTP APIs. This article discusses the strengths and weaknesses of gRPC and recommends scenarios for using gRPC over other technologies.
 
 ## High-level comparison
 
@@ -20,12 +21,12 @@ The following table offers a high-level comparison of features between gRPC and 
 | Feature          | gRPC                                               | HTTP APIs with JSON           |
 | ---------------- | -------------------------------------------------- | ----------------------------- |
 | Contract         | Required (*.proto*)                                | Optional (OpenAPI)            |
-| Transport        | HTTP/2                                             | HTTP                          |
+| Protocol         | HTTP/2                                             | HTTP                          |
 | Payload          | [Protobuf (small, binary)](#performance)           | JSON (large, human readable)  |
-| Prescriptiveness | [Strict specification](#strict-specification)      | Loose. Any HTTP is valid.      |
+| Prescriptiveness | [Strict specification](#strict-specification)      | Loose. Any HTTP is valid.     |
 | Streaming        | [Client, server, bi-directional](#streaming)       | Client, server                |
 | Browser support  | [No (requires grpc-web)](#limited-browser-support) | Yes                           |
-| Security         | Transport (HTTPS)                                  | Transport (HTTPS)             |
+| Security         | Transport (TLS)                                    | Transport (TLS)               |
 | Client code-generation | [Yes](#code-generation)                      | OpenAPI + third-party tooling |
 
 ## gRPC strengths
@@ -39,9 +40,11 @@ gRPC is designed for HTTP/2, a major revision of HTTP that provides significant 
 * Binary framing and compression. HTTP/2 protocol is compact and efficient both in sending and receiving.
 * Multiplexing of multiple HTTP/2 calls over a single TCP connection. Multiplexing eliminates [head-of-line blocking](https://en.wikipedia.org/wiki/Head-of-line_blocking).
 
+HTTP/2 is not exclusive to gRPC. Many request types, including HTTP APIs with JSON, can use HTTP/2 and benefit from its performance improvements.
+
 ### Code generation
 
-All gRPC frameworks provide first-class support for code generation. A core file to gRPC development is the [*.proto* file](https://developers.google.com/protocol-buffers/docs/proto3), which defines the contract of gRPC services and messages. From this file gRPC frameworks will code generate a service base class, messages, and a complete client.
+All gRPC frameworks provide first-class support for code generation. A core file to gRPC development is the [.proto file](https://developers.google.com/protocol-buffers/docs/proto3), which defines the contract of gRPC services and messages. From this file gRPC frameworks will code generate a service base class, messages, and a complete client.
 
 By sharing the *.proto* file between the server and client, messages and client code can be generated from end to end. Code generation of the client eliminates duplication of messages on the client and server, and creates a strongly-typed client for you. Not having to write a client saves significant development time in applications with many services.
 
@@ -49,7 +52,7 @@ By sharing the *.proto* file between the server and client, messages and client 
 
 A formal specification for HTTP API with JSON doesn't exist. Developers debate the best format of URLs, HTTP verbs, and response codes.
 
-The [gRPC specification](https://github.com/grpc/grpc/blob/master/doc/PROTOCOL-HTTP2.md) is prescriptive about the format a gRPC service must follow. gRPC eliminates debate and saves developer time because gPRC is consistent across platforms and implementations.
+The [gRPC specification](https://github.com/grpc/grpc/blob/master/doc/PROTOCOL-HTTP2.md) is prescriptive about the format a gRPC service must follow. gRPC eliminates debate and saves developer time because gRPC is consistent across platforms and implementations.
 
 ### Streaming
 
@@ -72,10 +75,10 @@ Propagating the deadline and cancellation through child gRPC calls helps enforce
 
 gRPC is well suited to the following scenarios:
 
-* **Microservices** &ndash; gRPC is designed for low latency and high throughput communication. gRPC is great for lightweight microservices where efficiency is critical.
-* **Point-to-point real-time communication** &ndash; gRPC has excellent support for bi-directional streaming. gRPC services can push messages in real-time without polling.
-* **Polyglot environments** &ndash; gRPC tooling supports all popular development languages, making gRPC a good choice for multi-language environments.
-* **Network constrained environments** &ndash; gRPC messages are serialized with Protobuf, a lightweight message format. A gRPC message is always smaller than an equivalent JSON message.
+* **Microservices**: gRPC is designed for low latency and high throughput communication. gRPC is great for lightweight microservices where efficiency is critical.
+* **Point-to-point real-time communication**: gRPC has excellent support for bi-directional streaming. gRPC services can push messages in real-time without polling.
+* **Polyglot environments**: gRPC tooling supports all popular development languages, making gRPC a good choice for multi-language environments.
+* **Network constrained environments**: gRPC messages are serialized with Protobuf, a lightweight message format. A gRPC message is always smaller than an equivalent JSON message.
 
 ## gRPC weaknesses
 
@@ -86,6 +89,9 @@ It's impossible to directly call a gRPC service from a browser today. gRPC heavi
 [gRPC-Web](https://grpc.io/docs/tutorials/basic/web.html) is an additional technology from the gRPC team that provides limited gRPC support in the browser. gRPC-Web consists of two parts: a JavaScript client that supports all modern browsers, and a gRPC-Web proxy on the server. The gRPC-Web client calls the proxy and the proxy will forward on the gRPC requests to the gRPC server.
 
 Not all of gRPC's features are supported by gRPC-Web. Client and bi-directional streaming isn't supported, and there is limited support for server streaming.
+
+> [!TIP]
+> .NET Core has support for gRPC-Web. Visit <xref:grpc/browser> for more information.
 
 ### Not human readable
 
@@ -99,9 +105,9 @@ Features such as [server reflection](https://github.com/grpc/grpc/blob/master/do
 
 Other frameworks are recommended over gRPC in the following scenarios:
 
-* **Browser accessible APIs** &ndash; gRPC isn't fully supported in the browser. gRPC-Web can offer browser support, but it has limitations and introduces a server proxy.
-* **Broadcast real-time communication** &ndash; gRPC supports real-time communication via streaming, but the concept of broadcasting a message out to registered connections doesn't exist. For example in a chat room scenario where new chat messages should be sent to all clients in the chat room, each gRPC call is required to individually stream new chat messages to the client. [SignalR](xref:signalr/introduction) is a useful framework for this scenario. SignalR has the concept of persistent connections and built-in support for broadcasting messages.
-* **Inter-process communication** &ndash; A process must host an HTTP/2 server to accept incoming gRPC calls. For Windows, inter-process communication [pipes](/dotnet/standard/io/pipe-operations) is a fast, lightweight method of communication.
+* **Browser accessible APIs**: gRPC isn't fully supported in the browser. gRPC-Web can offer browser support, but it has limitations and introduces a server proxy.
+* **Broadcast real-time communication**: gRPC supports real-time communication via streaming, but the concept of broadcasting a message out to registered connections doesn't exist. For example in a chat room scenario where new chat messages should be sent to all clients in the chat room, each gRPC call is required to individually stream new chat messages to the client. [SignalR](xref:signalr/introduction) is a useful framework for this scenario. SignalR has the concept of persistent connections and built-in support for broadcasting messages.
+* **Inter-process communication**: A process must host an HTTP/2 server to accept incoming gRPC calls. For Windows, inter-process communication [pipes](/dotnet/standard/io/pipe-operations) is a fast, lightweight method of communication.
 
 ## Additional resources
 

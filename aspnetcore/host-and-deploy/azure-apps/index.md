@@ -1,11 +1,12 @@
 ---
 title: Deploy ASP.NET Core apps to Azure App Service
-author: guardrex
+author: bradygaster
 description: This article contains links to Azure host and deploy resources.
 monikerRange: '>= aspnetcore-2.1'
-ms.author: riande
+ms.author: bradyg
 ms.custom: mvc
-ms.date: 10/02/2019
+ms.date: 12/16/2019
+no-loc: ["ASP.NET Core Identity", cookie, Cookie, Blazor, "Blazor Server", "Blazor WebAssembly", "Identity", "Let's Encrypt", Razor, SignalR]
 uid: host-and-deploy/azure-apps/index
 ---
 # Deploy ASP.NET Core apps to Azure App Service
@@ -23,6 +24,8 @@ Use Visual Studio to create and deploy an ASP.NET Core web app to Azure App Serv
 Use the command line to create and deploy an ASP.NET Core web app to Azure App Service on Linux.
 
 See the [ASP.NET Core on App Service Dashboard](https://aspnetcoreon.azurewebsites.net/) for the version of ASP.NET Core available on Azure App service.
+
+Subscribe to the [App Service Announcements](https://github.com/Azure/app-service-announcements/) repository and monitor the issues. The App Service team regularly posts announcements and scenarios arriving in App Service.
 
 The following articles are available in ASP.NET Core documentation:
 
@@ -44,6 +47,8 @@ Understand and troubleshoot warnings and errors with ASP.NET Core projects.
 ## Application configuration
 
 ### Platform
+
+The platform architecture (x86/x64) of an App Services app is set in the app's settings in the Azure Portal for apps that are hosted on an A-series compute (Basic) or higher hosting tier. Confirm that the app's publish settings (for example, in the Visual Studio [publish profile (.pubxml)](xref:host-and-deploy/visual-studio-publish-profiles)) match the setting in the app's service configuration in the Azure Portal.
 
 ::: moniker range=">= aspnetcore-2.2"
 
@@ -71,19 +76,22 @@ The preceding packages aren't available from the [Microsoft.AspNetCore.App metap
 
 ## Override app configuration using the Azure Portal
 
+::: moniker range=">= aspnetcore-3.0"
+
+App settings in the Azure Portal permit you to set environment variables for the app. Environment variables can be consumed by the [Environment Variables Configuration Provider](xref:fundamentals/configuration/index#environment-variables).
+
+When an app setting is created or modified in the Azure Portal and the **Save** button is selected, the Azure App is restarted. The environment variable is available to the app after the service restarts.
+
+When an app uses the [Generic Host](xref:fundamentals/host/generic-host), environment variables are loaded into the app's configuration when <xref:Microsoft.Extensions.Hosting.Host.CreateDefaultBuilder*> is called to build the host. For more information, see <xref:fundamentals/host/generic-host> and the [Environment Variables Configuration Provider](xref:fundamentals/configuration/index#environment-variables).
+
+::: moniker-end
+::: moniker range="< aspnetcore-3.0"
+
 App settings in the Azure Portal permit you to set environment variables for the app. Environment variables can be consumed by the [Environment Variables Configuration Provider](xref:fundamentals/configuration/index#environment-variables-configuration-provider).
 
 When an app setting is created or modified in the Azure Portal and the **Save** button is selected, the Azure App is restarted. The environment variable is available to the app after the service restarts.
 
-::: moniker range=">= aspnetcore-3.0"
-
-When an app uses the [Generic Host](xref:fundamentals/host/generic-host), environment variables aren't loaded into an app's configuration by default and the configuration provider must be added by the developer. The developer determines the environment variable prefix when the configuration provider is added. For more information, see <xref:fundamentals/host/generic-host> and the [Environment Variables Configuration Provider](xref:fundamentals/configuration/index#environment-variables-configuration-provider).
-
-::: moniker-end
-
-::: moniker range="< aspnetcore-3.0"
-
-When an app builds the host using [WebHost.CreateDefaultBuilder](/dotnet/api/microsoft.aspnetcore.webhost.createdefaultbuilder), environment variables that configure the host use the `ASPNETCORE_` prefix. For more information, see <xref:fundamentals/host/web-host> and the [Environment Variables Configuration Provider](xref:fundamentals/configuration/index#environment-variables-configuration-provider).
+When an app uses the [Web Host](xref:fundamentals/host/web-host), environment variables are loaded into the app's configuration when <xref:Microsoft.AspNetCore.WebHost.CreateDefaultBuilder*> is called to build the host. For more information, see <xref:fundamentals/host/web-host> and the [Environment Variables Configuration Provider](xref:fundamentals/configuration/index#environment-variables-configuration-provider).
 
 ::: moniker-end
 
@@ -135,28 +143,54 @@ When swapping between deployment slots, any system using data protection won't b
 
 For more information, see <xref:security/data-protection/implementation/key-storage-providers>.
 <a name="deploy-aspnet-core-preview-release-to-azure-app-service"></a>
-<!-- revert this after 3.0 supported
-## Deploy ASP.NET Core preview release to Azure App Service
 
-Use one of the following approaches if the app relies on a preview release of .NET Core:
+## Deploy an ASP.NET Core app that uses a .NET Core preview
 
-* [Install the preview site extension](#install-the-preview-site-extension).
-* [Deploy a self-contained preview app](#deploy-a-self-contained-preview-app).
-* [Use Docker with Web Apps for containers](#use-docker-with-web-apps-for-containers).
--->
-## Deploy ASP.NET Core 3.0 to Azure App Service
+To deploy an app that uses a preview release of .NET Core, see the following resources. These approaches are also used when the runtime is available but the SDK hasn't been installed on Azure App Service.
 
-We hope to have ASP.NET Core 3.0 available on Azure App Service soon.
+* [Specify the .NET Core SDK Version using Azure Pipelines](#specify-the-net-core-sdk-version-using-azure-pipelines)
+* [Deploy a self-contained preview app](#deploy-a-self-contained-preview-app)
+* [Use Docker with Web Apps for containers](#use-docker-with-web-apps-for-containers)
+* [Install the preview site extension](#install-the-preview-site-extension)
 
-Use one of the following approaches if the app relies on .NET Core 3.0:
+See the [ASP.NET Core on App Service Dashboard](https://aspnetcoreon.azurewebsites.net/) for the version of ASP.NET Core available on Azure App service.
 
-* [Install the preview site extension](#install-the-preview-site-extension).
-* [Deploy a self-contained preview app](#deploy-a-self-contained-preview-app).
-* [Use Docker with Web Apps for containers](#use-docker-with-web-apps-for-containers).
+### Specify the .NET Core SDK Version using Azure Pipelines
+
+Use [Azure App Service CI/CD scenarios](/azure/app-service/deploy-continuous-deployment) to set up a continuous integration build with Azure DevOps. After the Azure DevOps build is created, optionally configure the build to use a specific SDK version. 
+
+#### Specify the .NET Core SDK version
+
+When using the App Service deployment center to create an Azure DevOps build, the default build pipeline includes steps for `Restore`, `Build`, `Test`, and `Publish`. To specify the SDK version, select the **Add (+)** button in the Agent job list to add a new step. Search for **.NET Core SDK** in the search bar. 
+
+![Add the .NET Core SDK step](index/add-sdk-step.png)
+
+Move the step into the first position in the build so that the steps following it use the specified version of the .NET Core SDK. Specify the version of the .NET Core SDK. In this example, the SDK is set to `3.0.100`.
+
+![Completed SDK step](index/sdk-step-first-place.png)
+
+To publish a [self-contained deployment (SCD)](/dotnet/core/deploying/#self-contained-deployments-scd), configure SCD in the `Publish` step and provide the [Runtime Identifier (RID)](/dotnet/core/rid-catalog).
+
+![Self-contained publish](index/self-contained.png)
+
+### Deploy a self-contained preview app
+
+A [self-contained deployment (SCD)](/dotnet/core/deploying/#self-contained-deployments-scd) that targets a preview runtime carries the preview runtime in the deployment.
+
+When deploying a self-contained app:
+
+* The site in Azure App Service doesn't require the [preview site extension](#install-the-preview-site-extension).
+* The app must be published following a different approach than when publishing for a [framework-dependent deployment (FDD)](/dotnet/core/deploying#framework-dependent-deployments-fdd).
+
+Follow the guidance in the [Deploy the app self-contained](#deploy-the-app-self-contained) section.
+
+### Use Docker with Web Apps for containers
+
+The [Docker Hub](https://hub.docker.com/r/microsoft/aspnetcore/) contains the latest preview Docker images. The images can be used as a base image. Use the image and deploy to Web Apps for Containers normally.
 
 ### Install the preview site extension
 
-If a problem occurs using the preview site extension, open an [aspnet/AspNetCore issue](https://github.com/aspnet/AspNetCore/issues).
+If a problem occurs using the preview site extension, open an [dotnet/AspNetCore issue](https://github.com/dotnet/AspNetCore/issues).
 
 1. From the Azure Portal, navigate to the App Service.
 1. Select the web app.
@@ -181,9 +215,11 @@ When the operation completes, the latest .NET Core preview is installed. Verify 
    The command returns `True` when the x64 preview runtime is installed.
 
 > [!NOTE]
-> The platform architecture (x86/x64) of an App Services app is set in the app's settings in the Azure Portal for apps that are hosted on an A-series compute or better hosting tier. If the app is run in in-process mode and the platform architecture is configured for 64-bit (x64), the ASP.NET Core Module uses the 64-bit preview runtime, if present. Install the **ASP.NET Core {X.Y} (x64) Runtime** extension.
+> The platform architecture (x86/x64) of an App Services app is set in the app's settings in the Azure Portal for apps that are hosted on an A-series compute (Basic) or higher hosting tier. Confirm that the app's publish settings (for example, in the Visual Studio [publish profile (.pubxml)](xref:host-and-deploy/visual-studio-publish-profiles)) match the setting in the app's service configuration in the Azure portal.
 >
-> After installing the x64 preview runtime, run the following command in the Kudu PowerShell command window to verify the installation. Substitute the ASP.NET Core runtime version for `{X.Y}` in the command:
+> If the app is run in in-process mode and the platform architecture is configured for 64-bit (x64), the ASP.NET Core Module uses the 64-bit preview runtime, if present. Install the **ASP.NET Core {X.Y} (x64) Runtime** extension using the Azure Portal.
+>
+> After installing the x64 preview runtime, run the following command in the Azure Kudu PowerShell command window to verify the installation. Substitute the ASP.NET Core runtime version for `{X.Y}` in the following command:
 >
 > ```powershell
 > Test-Path D:\home\SiteExtensions\AspNetCoreRuntime.{X.Y}.x64\
@@ -200,33 +236,18 @@ If an ARM template is used to create and deploy apps, the `siteextensions` resou
 
 [!code-json[](index/sample/arm.json?highlight=2)]
 
-### Deploy a self-contained preview app
-
-A [self-contained deployment (SCD)](/dotnet/core/deploying/#self-contained-deployments-scd) that targets a preview runtime carries the preview runtime in the deployment.
-
-When deploying a self-contained app:
-
-* The site in Azure App Service doesn't require the [preview site extension](#install-the-preview-site-extension).
-* The app must be published following a different approach than when publishing for a [framework-dependent deployment (FDD)](/dotnet/core/deploying#framework-dependent-deployments-fdd).
-
-Follow the guidance in the [Deploy the app self-contained](#deploy-the-app-self-contained) section.
-
-### Use Docker with Web Apps for containers
-
-The [Docker Hub](https://hub.docker.com/r/microsoft/aspnetcore/) contains the latest preview Docker images. The images can be used as a base image. Use the image and deploy to Web Apps for Containers normally.
-
 ## Publish and deploy the app
-
-### Deploy the app framework-dependent
 
 ::: moniker range=">= aspnetcore-2.2"
 
-For a 64-bit [framework-dependent deployment](/dotnet/core/deploying/#framework-dependent-deployments-fdd):
+For a 64-bit deployment:
 
 * Use a 64-bit .NET Core SDK to build a 64-bit app.
 * Set the **Platform** to **64 Bit** in the App Service's **Configuration** > **General settings**. The app must use a Basic or higher service plan to enable the choice of platform bitness.
 
 ::: moniker-end
+
+### Deploy the app framework-dependent
 
 # [Visual Studio](#tab/visual-studio)
 
@@ -257,7 +278,7 @@ For a 64-bit [framework-dependent deployment](/dotnet/core/deploying/#framework-
 
 ### Deploy the app self-contained
 
-Use Visual Studio or the command-line interface (CLI) tools for a [self-contained deployment (SCD)](/dotnet/core/deploying/#self-contained-deployments-scd).
+Use Visual Studio or the .NET Core CLI for a [self-contained deployment (SCD)](/dotnet/core/deploying/#self-contained-deployments-scd).
 
 # [Visual Studio](#tab/visual-studio)
 

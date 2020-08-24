@@ -1,14 +1,15 @@
 ---
-title: Razor Pages with EF Core in ASP.NET Core - Data Model - 5 of 8
-author: tdykstra
-description: In this tutorial, add more entities and relationships and customize the data model by specifying formatting, validation, and mapping rules.
+title: Part 5, Razor Pages with EF Core in ASP.NET Core - Data Model
+author: rick-anderson
+description: Part 5 of Razor Pages and Entity Framework tutorial series.
 ms.author: riande
 ms.custom: mvc
 ms.date: 07/22/2019
+no-loc: ["ASP.NET Core Identity", cookie, Cookie, Blazor, "Blazor Server", "Blazor WebAssembly", "Identity", "Let's Encrypt", Razor, SignalR]
 uid: data/ef-rp/complex-data-model
 ---
 
-# Razor Pages with EF Core in ASP.NET Core - Data Model - 5 of 8
+# Part 5, Razor Pages with EF Core in ASP.NET Core - Data Model
 
 By [Tom Dykstra](https://github.com/tdykstra) and [Rick Anderson](https://twitter.com/RickAndMSFT)
 
@@ -91,7 +92,7 @@ The `StringLength` attribute also provides client-side and server-side validatio
 The `StringLength` attribute doesn't prevent a user from entering white space for a name. The [RegularExpression](/dotnet/api/system.componentmodel.dataannotations.regularexpressionattribute?view=netframework-4.7.1) attribute can be used to apply restrictions to the input. For example, the following code requires the first character to be upper case and the remaining characters to be alphabetical:
 
 ```csharp
-[RegularExpression(@"^[A-Z]+[a-zA-Z""'\s-]*$")]
+[RegularExpression(@"^[A-Z]+[a-zA-Z]*$")]
 ```
 
 # [Visual Studio](#tab/visual-studio)
@@ -677,8 +678,7 @@ In the `ComplexDataModel` migration class, update the `Up` method:
 
 Add the following highlighted code. The new code goes after the `.CreateTable( name: "Department"` block:
 
-[!code-csharp[](intro/samples/cu30snapshots/5-complex/Migrations/
-ComplexDataModel.cs?name=snippet_CreateDefaultValue&highlight=23-31)]
+[!code-csharp[](intro/samples/cu30snapshots/5-complex/Migrations/ComplexDataModel.cs?name=snippet_CreateDefaultValue&highlight=23-31)]
 
 With the preceding changes, existing `Course` rows will be related to the "Temp" department after the `ComplexDataModel.Up` method runs.
 
@@ -731,7 +731,7 @@ The entity classes for the completed data model are shown in the following illus
 ![Entity diagram](complex-data-model/_static/diagram.png)
 
 If you run into problems you can't solve, download the [completed app](
-https://github.com/aspnet/AspNetCore.Docs/tree/master/aspnetcore/data/ef-rp/intro/samples).
+https://github.com/dotnet/AspNetCore.Docs/tree/master/aspnetcore/data/ef-rp/intro/samples).
 
 ## Customize the data model with attributes
 
@@ -785,7 +785,7 @@ Update the `Student` model with the following code:
 The preceding code limits names to no more than 50 characters. The `StringLength` attribute doesn't prevent a user from entering white space for a name. The [RegularExpression](/dotnet/api/system.componentmodel.dataannotations.regularexpressionattribute?view=netframework-4.7.1) attribute is used to apply restrictions to the input. For example, the following code requires the first character to be upper case and the remaining characters to be alphabetical:
 
 ```csharp
-[RegularExpression(@"^[A-Z]+[a-zA-Z""'\s-]*$")]
+[RegularExpression(@"^[A-Z]+[a-zA-Z]*$")]
 ```
 
 Run the app:
@@ -818,7 +818,7 @@ With the preceding change, `Student.FirstMidName` in the app maps to the `FirstN
 
 The addition of the `Column` attribute changes the model backing the `SchoolContext`. The model backing the `SchoolContext` no longer matches the database. If the app is run before applying migrations, the following exception is generated:
 
-```SQL
+```
 SqlException: Invalid column name 'FirstName'.
 ```
 
@@ -829,7 +829,7 @@ To update the DB:
 
 # [Visual Studio](#tab/visual-studio)
 
-```PMC
+```powershell
 Add-Migration ColumnFirstName
 Update-Database
 ```
@@ -1288,7 +1288,7 @@ The code in the updated `DbInitializer` adds seed data for the new entities. To 
 
 In the **Package Manager Console** (PMC), run the following command:
 
-```PMC
+```powershell
 Drop-Database
 Update-Database
 ```
